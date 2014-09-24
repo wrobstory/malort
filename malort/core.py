@@ -21,11 +21,14 @@ __all__ = ('dict_generator')
 def dict_generator(path, delimiter='\n'):
     """
     Given a directory path, return a generator that will return a dict for each
-    JSON blob.
+    .json file and `delimiter` separated blob in a text file.
 
-    If the directory contains .json, it will yield one dict per file. If a
-    delimiter is specified, it will split on the delimiter and return one dict
-    per json blob
+    Ex: In directory 'files' you have the following
+    foo.json: '{"foo": 1}'
+    bar.txt: '{"bar": 2}|{"baz": 3}'
+
+    malort.core.dict_generator('files', '|') will generate the dicts
+    {'foo': 1}, {'bar': 2}, and {'baz': 3}
 
     Parameters
     ----------
