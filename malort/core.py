@@ -13,6 +13,7 @@ from __future__ import division
 import json
 import os
 from os.path import isfile, join, splitext
+import random
 
 
 __all__ = ('dict_generator', 'update_entry_stats')
@@ -85,16 +86,28 @@ def update_entry_stats(value, current_stats):
     new_stats = {}
     stats = current_stats.get(value_type, {})
     if value_type == 'str':
-        value = len(value)
+        val = len(value)
+    else:
+        val = value
     count = stats.get('count', 0)
     if value_type in ['str', 'int', 'float']:
-        max_, min_, mean = (stats.get('max', value),
-                            stats.get('min', value),
+        max_, min_, mean = (stats.get('max', val),
+                            stats.get('min', val),
                             stats.get('mean', 0))
 
-        new_stats['mean'] = round(get_new_mean(value, mean, count), 3)
-        new_stats['max'] = value if max_ < value else max_
-        new_stats['min'] = value if min_ > value else min_
+        new_stats['mean'] = round(get_new_mean(val, mean, count), 3)
+        new_stats['max'] = val if max_ < val else max_
+        new_stats['min'] = val if min_ > val else min_
+        if value_type == 'str':
+            sample = stats.get('sample', [])
+            if len(sample) == 3:
+                if random.randint(0, 1):
+                    sample.pop(0)
+                    sample.append(value)
+            else:
+                sample.append(value)
+            new_stats['sample'] = sample
+
     new_stats['count'] = count + 1
 
     return value_type, new_stats
