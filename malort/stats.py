@@ -72,6 +72,11 @@ def update_entry_stats(value, current_stats):
     current_stats: Dict, see Example
     """
     value_type = type(value).__name__
+
+    # Python 2.7
+    if value_type == 'unicode':
+        value_type = 'str'
+
     new_stats = {}
     stats = current_stats.get(value_type, {})
     if value_type == 'str':
@@ -87,6 +92,7 @@ def update_entry_stats(value, current_stats):
         new_stats['mean'] = round(get_new_mean(val, mean, count), 3)
         new_stats['max'] = val if max_ < val else max_
         new_stats['min'] = val if min_ > val else min_
+
         if value_type == 'str':
             sample = stats.get('sample', [])
             if len(sample) == 3:
@@ -96,6 +102,7 @@ def update_entry_stats(value, current_stats):
             else:
                 sample.append(value)
             new_stats['sample'] = sample
+
         elif value_type == 'float':
             dec_tup = decimal.Decimal(str(value)).as_tuple()
             vprec, vscale = len(dec_tup.digits), abs(dec_tup.exponent)
