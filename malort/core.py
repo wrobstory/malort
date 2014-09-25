@@ -97,4 +97,29 @@ def update_entry_stats(value, current_stats):
         new_stats['min'] = value if min_ > value else min_
     new_stats['count'] = count + 1
 
-    return new_stats
+    return value_type, new_stats
+
+
+def recur_dict(value, stats):
+
+    if isinstance(value, dict):
+        for k, v in value.items():
+            if isinstance(v, (list, dict)):
+                recur_dict(v, stats)
+            else:
+                if k not in stats:
+                    stats[k] = {}
+                current_stats = stats.get(k)
+                value_type, new_stats = update_entry_stats(v, current_stats)
+                current_stats[value_type] = new_stats
+
+    elif isinstance(value, list):
+        for v in value:
+            if isinstance(v, (list, dict)):
+                recur_dict(v, stats)
+            else:
+                raise ValueError('List of values found. Malort can only pro'
+                                 'cess key: value pairs!')
+
+    return stats
+
