@@ -10,6 +10,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
+import decimal
 import json
 import os
 from os.path import isfile, join, splitext
@@ -47,19 +48,10 @@ def dict_generator(path, delimiter='\n'):
                 else:
                     yield json.loads(fread.read())
 
-value = {
-    "str": {'count': 5, 'avg_len': 6},
-    "int": {'max': 67, 'min': 0, 'mean': 5, 'count': 8},
-    "float": {'max': 6.7, 'min': -1.3, 'count': 6},
-    "boolean": {'count': 6}
-}
-
-
 def get_new_mean(value, current_mean, count):
     """Given a value, current mean, and count, return new mean"""
     summed = current_mean * count
     return (summed + value)/(count + 1)
-
 
 def update_entry_stats(value, current_stats):
     """
@@ -104,6 +96,13 @@ def update_entry_stats(value, current_stats):
             else:
                 sample.append(value)
             new_stats['sample'] = sample
+        elif value_type == 'float':
+            dec_tup = decimal.Decimal(str(value)).as_tuple()
+            vprec, vscale = len(dec_tup.digits), abs(dec_tup.exponent)
+            mxprec = stats.get('max_precision', vprec)
+            mxscale = stats.get('max_scale', vscale)
+            new_stats['max_precision'] = vprec if mxprec < vprec else mxprec
+            new_stats['max_scale'] = vscale if mxscale < vscale else mxscale
 
     new_stats['count'] = count + 1
 
