@@ -19,7 +19,7 @@ from malort.stats import dict_generator, recur_dict
 from malort.type_mappers import TypeMappers
 
 
-def run(path, delimiter='\n'):
+def analyze(path, delimiter='\n'):
 
     stats = {}
     for blob in dict_generator(path, delimiter):
@@ -42,4 +42,11 @@ class MalortStats(TypeMappers):
         """
         self.stats = stats
 
+    def get_conflicting_types(self):
+        """Return only the stats where there are multiple types detected"""
+        conflicted = {}
+        for k, v in self.stats.items():
+            if len(v.keys()) > 1:
+                conflicted[k] = v
 
+        return conflicted

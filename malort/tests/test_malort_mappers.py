@@ -14,7 +14,7 @@ from malort.test_helpers import TestHelpers, TEST_FILES_1, TEST_FILES_2
 class TestTypeMappers(unittest.TestCase):
 
     def test_files_1(self):
-        mtresult = mt.run(TEST_FILES_1)
+        mtresult = mt.analyze(TEST_FILES_1)
         types = mtresult.get_redshift_types()
         expected = {
             'varcharfield': 'varchar(12)',
@@ -25,7 +25,7 @@ class TestTypeMappers(unittest.TestCase):
         self.assertDictEqual(types, expected)
 
     def test_files_2(self):
-        mtresult = mt.run(TEST_FILES_2, '|')
+        mtresult = mt.analyze(TEST_FILES_2, '|')
         types = mtresult.get_redshift_types()
         for k, v in types.items():
             self.assertEqual(v, 'Multiple types detected.')
@@ -36,7 +36,7 @@ class TestRedshiftMapper(unittest.TestCase):
     rs = mt.type_mappers.RedshiftMapper
 
     def test_booleans(self):
-        self.assertEqual(self.rs.booleans(), "BOOLEAN")
+        self.assertEqual(self.rs.booleans({}), "BOOLEAN")
 
     def test_strings(self):
         stat = {'min': 5, 'max': 5, 'mean': 5.0}

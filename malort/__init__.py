@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 from malort import stats
-from malort.core import run
+from malort.core import analyze

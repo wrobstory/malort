@@ -15,10 +15,10 @@ import malort as mt
 from malort.test_helpers import TestHelpers, TEST_FILES_1, TEST_FILES_2
 
 
-class TestRun(TestHelpers):
+class TestCore(TestHelpers):
 
     def test_files_1(self):
-        mtresult = mt.run(TEST_FILES_1)
+        mtresult = mt.analyze(TEST_FILES_1)
         expected = {
         'charfield': {'str': {'count': 4, 'max': 11, 'mean': 11.0,
                               'min': 11, 'sample': ['fixedlength']}},
@@ -33,9 +33,10 @@ class TestRun(TestHelpers):
                                             'varyinglengt']}}
         }
         self.assert_stats(mtresult.stats, expected)
+        self.assertDictEqual(mtresult.get_conflicting_types(), {})
 
     def test_files_2(self):
-        mtresult = mt.run(TEST_FILES_2, '|')
+        mtresult = mt.analyze(TEST_FILES_2, '|')
         expected = {
             'bar': {'bool': {'count': 1},
                     'float': {'count': 2, 'max': 4.0, 'mean': 3.0, 'min': 2.0,
@@ -54,3 +55,4 @@ class TestRun(TestHelpers):
                             'sample': ['var', 'varyin', 'varyingle']}}
         }
         self.assert_stats(mtresult.stats, expected)
+        self.assert_stats(mtresult.get_conflicting_types(), expected)

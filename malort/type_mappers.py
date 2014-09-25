@@ -32,7 +32,7 @@ class RedshiftMapper(AbstractMapper):
     """Mapping of types/statistics to Redshift Column Types"""
 
     @staticmethod
-    def booleans():
+    def booleans(stat):
         return "BOOLEAN"
 
     @staticmethod
