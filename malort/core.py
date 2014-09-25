@@ -101,6 +101,16 @@ def update_entry_stats(value, current_stats):
 
 
 def recur_dict(value, stats):
+    """
+    Recurse through a dict `value` and update `stats` for each field.
+    Can handle nested dicts and lists of dicts, but will raise exception
+    for list of values
+
+    Parameters
+    ----------
+    value: dict
+    stats: dict
+    """
 
     if isinstance(value, dict):
         for k, v in value.items():
@@ -123,3 +133,10 @@ def recur_dict(value, stats):
 
     return stats
 
+def run(path, delimiter='\n'):
+
+    stats = {}
+    for blob in dict_generator(path, delimiter):
+        recur_dict(blob, stats)
+
+    return stats

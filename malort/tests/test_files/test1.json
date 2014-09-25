@@ -1,4 +1,4 @@
-{"intfield": 1,
- "floatfield": 1.5,
+{"intfield": 5,
+ "floatfield": 2.0,
  "charfield": "fixedlength",
- "varcharfield": "varyinglength"}
+ "varcharfield": "var"}

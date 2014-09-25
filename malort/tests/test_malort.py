@@ -175,3 +175,33 @@ class TestRecurDict(unittest.TestCase):
 
         with pytest.raises(ValueError):
             mt.core.recur_dict(with_values, {})
+
+class TestRun(unittest.TestCase):
+
+    def test_files_1(self):
+        stats = mt.run(TEST_FILES_1)
+        expected = {
+        'charfield': {'str': {'count': 4, 'max': 11, 'mean': 11.0,
+                              'min': 11}},
+        'floatfield': {'float': {'count': 4, 'max': 4.0, 'mean': 3.25,
+                                 'min': 2.0}},
+        'intfield': {'int': {'count': 4, 'max': 20, 'mean': 12.5,
+                             'min': 5}},
+        'varcharfield': {'str': {'count': 4, 'max': 12, 'mean': 7.5,
+                                 'min': 3}}}
+        self.assertDictEqual(stats, expected)
+
+    def test_files_2(self):
+        stats = mt.run(TEST_FILES_2, '|')
+        expected = {
+            'bar': {'bool': {'count': 1},
+                    'float': {'count': 2, 'max': 4.0, 'mean': 3.0, 'min': 2.0},
+                    'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3}},
+            'baz': {'int': {'count': 2, 'max': 2, 'mean': 1.5, 'min': 1},
+                    'str': {'count': 2, 'max': 5, 'mean': 5.0, 'min': 5}},
+            'foo': {'int': {'count': 2, 'max': 1000, 'mean': 505.0, 'min': 10},
+                    'str': {'count': 2, 'max': 3, 'mean': 3.0, 'min': 3}},
+            'qux': {'int': {'count': 1, 'max': 10, 'mean': 10.0, 'min': 10},
+                    'str': {'count': 3, 'max': 9, 'mean': 6.0, 'min': 3}}
+        }
+        self.assertDictEqual(stats, expected)

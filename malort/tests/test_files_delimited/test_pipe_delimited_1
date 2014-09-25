@@ -1,1 +1,1 @@
-{"intfield": 1,"floatfield": 1.5,"charfield": "fixedlength","varcharfield": "varyinglength"}|{"intfield": 2,"floatfield": 2.5,"charfield": "fixedlength","varcharfield": "Of varying length"}
+{"foo": 10,"bar": 2.0,"baz": "fixed","qux": 10}|{"foo": "foo","bar": true,"baz": 2,"qux": "varyin"}
