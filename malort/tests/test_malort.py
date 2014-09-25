@@ -95,7 +95,7 @@ class TestUpdateEntryStats(TestHelpers):
         self.assertEquals(update_2,
                           {'count': 1, 'mean': 2.0, 'max': 2.0,
                            'min': 2.0, 'max_precision': 2,
-                           'max_scale': 1})
+                           'max_scale': 1, 'fixed_length': True})
 
         vtype3, update_3 = mt.stats.update_entry_stats(2, {'int': update_1,
                                                           'float': update_2})
@@ -109,7 +109,7 @@ class TestUpdateEntryStats(TestHelpers):
         self.assertEquals(update_4,
                           {'count': 2, 'mean': 3.277, 'max': 4.555,
                            'min': 2.0, 'max_precision': 4,
-                           'max_scale': 3})
+                           'max_scale': 3, 'fixed_length': False})
 
         for v in [vtype1, vtype3]:
             self.assertEquals(v, 'int')
@@ -127,7 +127,7 @@ class TestRecurDict(TestHelpers):
                              'sample': ['Foo']}},
             'key3': {'float': {'count': 1, 'max': 4.0, 'mean': 4.0,
                                'min': 4.0, 'max_precision': 2,
-                               'max_scale': 1}},
+                               'max_scale': 1, 'fixed_length': True}},
             'key4': {'bool': {'count': 1}}
         }
 
@@ -153,7 +153,7 @@ class TestRecurDict(TestHelpers):
                              'sample': ['Foo', 'Foooo']}},
             'key3': {'float': {'count': 2, 'max': 8.0, 'mean': 6.0,
                                'min': 4.0, 'max_precision': 2,
-                               'max_scale': 1}},
+                               'max_scale': 1, 'fixed_length': True}},
             'key4': {'bool': {'count': 2}}
         }
 
@@ -167,12 +167,13 @@ class TestRecurDict(TestHelpers):
                      'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
                              'sample': ['Foo']}},
             'key2': {'float': {'count': 1, 'max': 3.0, 'mean': 3.0, 'min': 3.0,
-                               'max_precision': 2, 'max_scale': 1},
+                               'max_precision': 2, 'max_scale': 1,
+                               'fixed_length': True},
                      'str': {'count': 2, 'max': 5, 'mean': 4.0, 'min': 3,
                              'sample': ['Foo', 'Foooo']}},
             'key3': {'float': {'count': 3, 'max': 8.0, 'mean': 4.667,
                                'min': 2.0, 'max_precision': 2,
-                               'max_scale': 1}},
+                               'max_scale': 1, 'fixed_length': True}},
             'key4': {'bool': {'count': 3}}
         }
 
@@ -221,7 +222,7 @@ class TestRun(TestHelpers):
                               'min': 11, 'sample': ['fixedlength']}},
         'floatfield': {'float': {'count': 4, 'max': 10.8392, 'mean': 5.243,
                                  'min': 2.345, 'max_precision': 6,
-                                 'max_scale': 4}},
+                                 'max_scale': 4, 'fixed_length': False}},
         'intfield': {'int': {'count': 4, 'max': 20, 'mean': 12.5,
                              'min': 5}},
         'varcharfield': {'str': {'count': 4, 'max': 12, 'mean': 7.5,
@@ -236,7 +237,8 @@ class TestRun(TestHelpers):
         expected = {
             'bar': {'bool': {'count': 1},
                     'float': {'count': 2, 'max': 4.0, 'mean': 3.0, 'min': 2.0,
-                              'max_precision': 2, 'max_scale': 1},
+                              'max_precision': 2, 'max_scale': 1,
+                              'fixed_length': True},
                     'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
                             'sample': ['bar']}},
             'baz': {'int': {'count': 2, 'max': 2, 'mean': 1.5, 'min': 1},

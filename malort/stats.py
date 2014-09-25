@@ -101,6 +101,10 @@ def update_entry_stats(value, current_stats):
             vprec, vscale = len(dec_tup.digits), abs(dec_tup.exponent)
             mxprec = stats.get('max_precision', vprec)
             mxscale = stats.get('max_scale', vscale)
+            if mxprec != vprec or mxscale != vscale:
+                new_stats['fixed_length'] = False
+            else:
+                new_stats['fixed_length'] = True
             new_stats['max_precision'] = vprec if mxprec < vprec else mxprec
             new_stats['max_scale'] = vscale if mxscale < vscale else mxscale
 
