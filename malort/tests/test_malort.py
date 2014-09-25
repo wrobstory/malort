@@ -44,30 +44,30 @@ class TestHelpers(unittest.TestCase):
 class TestDictGenerator(TestHelpers):
 
     def test_json_files_newline(self):
-        gen = mt.core.dict_generator(TEST_FILES_1)
+        gen = mt.stats.dict_generator(TEST_FILES_1)
         self.assertEquals(len([d for d in gen]), 4)
 
     def test_json_files_pipe(self):
-        gen = mt.core.dict_generator(TEST_FILES_2, '|')
+        gen = mt.stats.dict_generator(TEST_FILES_2, '|')
         self.assertEquals(len([d for d in gen]), 4)
 
 
 class TestUpdateEntryStats(TestHelpers):
 
     def test_stats_str(self):
-        vtype1, update_1 = mt.core.update_entry_stats('Foooo', {})
+        vtype1, update_1 = mt.stats.update_entry_stats('Foooo', {})
         print(update_1)
         self.assertEquals(update_1,
                           {'count': 1, 'mean': 5.0, 'max': 5,
                            'min': 5, 'sample': ['Foooo']})
 
-        vtype2, update_2 = mt.core.update_entry_stats('Foooo',
+        vtype2, update_2 = mt.stats.update_entry_stats('Foooo',
                                                       {'str': update_1})
         self.assertEquals(update_2,
                           {'count': 2, 'mean': 5.0, 'max': 5,
                            'min': 5, 'sample': ['Foooo', 'Foooo']})
 
-        vtype3, update_3 = mt.core.update_entry_stats('Foo', {'str': update_2})
+        vtype3, update_3 = mt.stats.update_entry_stats('Foo', {'str': update_2})
         self.assertEquals(update_3,
                           {'count': 3, 'mean': 4.333, 'max': 5,
                            'min': 3, 'sample': ['Foooo', 'Foooo', 'Foo']})
@@ -76,33 +76,33 @@ class TestUpdateEntryStats(TestHelpers):
             self.assertEquals(v, 'str')
 
     def test_stats_bool(self):
-        vtype1, update_1 = mt.core.update_entry_stats(True, {})
+        vtype1, update_1 = mt.stats.update_entry_stats(True, {})
         self.assertEquals(update_1, {'count': 1})
 
-        vtype2, update_2 = mt.core.update_entry_stats(False, {'bool': update_1})
+        vtype2, update_2 = mt.stats.update_entry_stats(False, {'bool': update_1})
         self.assertEquals(update_2, {'count': 2})
 
         for v in [vtype1, vtype2]:
             self.assertEquals(v, 'bool')
 
     def test_stats_number(self):
-        vtype1, update_1 = mt.core.update_entry_stats(1, {})
+        vtype1, update_1 = mt.stats.update_entry_stats(1, {})
         self.assertEquals(update_1,
                           {'count': 1, 'mean': 1.0, 'max': 1,
                            'min': 1})
 
-        vtype2, update_2 = mt.core.update_entry_stats(2.0, {'int': update_1})
+        vtype2, update_2 = mt.stats.update_entry_stats(2.0, {'int': update_1})
         self.assertEquals(update_2,
                           {'count': 1, 'mean': 2.0, 'max': 2.0,
                            'min': 2.0})
 
-        vtype3, update_3 = mt.core.update_entry_stats(2, {'int': update_1,
+        vtype3, update_3 = mt.stats.update_entry_stats(2, {'int': update_1,
                                                           'float': update_2})
         self.assertEquals(update_3,
                           {'count': 2, 'mean': 1.5, 'max': 2,
                            'min': 1})
 
-        vtype4, update_4 = mt.core.update_entry_stats(4.0, {'int': update_3,
+        vtype4, update_4 = mt.stats.update_entry_stats(4.0, {'int': update_3,
                                                             'float': update_2})
         self.assertEquals(update_4,
                           {'count': 2, 'mean': 3.0, 'max': 4.0,
@@ -127,10 +127,10 @@ class TestRecurDict(TestHelpers):
             'key4': {'bool': {'count': 1}}
         }
 
-        stats = mt.core.recur_dict(simple1, {})
+        stats = mt.stats.recur_dict(simple1, {})
         self.assertDictEqual(stats, expected)
 
-        updated_stats = mt.core.recur_dict({'key1': 2}, stats)
+        updated_stats = mt.stats.recur_dict({'key1': 2}, stats)
         self.assertDictEqual(updated_stats['key1'],
                              {'int': {'count': 2, 'max': 2, 'mean': 1.5,
                                       'min': 1}})
@@ -152,7 +152,7 @@ class TestRecurDict(TestHelpers):
             'key4': {'bool': {'count': 2}}
         }
 
-        stats = mt.core.recur_dict(depth_one, {})
+        stats = mt.stats.recur_dict(depth_one, {})
         self.assert_stats(stats, expected)
 
     @property
@@ -180,7 +180,7 @@ class TestRecurDict(TestHelpers):
             }
         }
 
-        stats = mt.core.recur_dict(depth_two, {})
+        stats = mt.stats.recur_dict(depth_two, {})
         self.assert_stats(stats, self.depth_two_expected)
 
     def test_recur_with_array(self):
@@ -192,7 +192,7 @@ class TestRecurDict(TestHelpers):
                 ]
         }
 
-        stats = mt.core.recur_dict(with_list, {})
+        stats = mt.stats.recur_dict(with_list, {})
         self.assert_stats(stats, self.depth_two_expected)
 
     def test_raises_with_list_of_values(self):
@@ -202,13 +202,13 @@ class TestRecurDict(TestHelpers):
         }
 
         with pytest.raises(ValueError):
-            mt.core.recur_dict(with_values, {})
+            mt.stats.recur_dict(with_values, {})
 
 
 class TestRun(TestHelpers):
 
     def test_files_1(self):
-        stats = mt.run(TEST_FILES_1)
+        mtresult = mt.run(TEST_FILES_1)
         expected = {
         'charfield': {'str': {'count': 4, 'max': 11, 'mean': 11.0,
                               'min': 11, 'sample': ['fixedlength']}},
@@ -221,10 +221,10 @@ class TestRun(TestHelpers):
                                  'sample': ['var', 'varyin', 'varyingle',
                                             'varyinglengt']}}
         }
-        self.assert_stats(stats, expected)
+        self.assert_stats(mtresult.stats, expected)
 
     def test_files_2(self):
-        stats = mt.run(TEST_FILES_2, '|')
+        mtresult = mt.run(TEST_FILES_2, '|')
         expected = {
             'bar': {'bool': {'count': 1},
                     'float': {'count': 2, 'max': 4.0, 'mean': 3.0, 'min': 2.0},
@@ -240,4 +240,4 @@ class TestRun(TestHelpers):
                     'str': {'count': 3, 'max': 9, 'mean': 6.0, 'min': 3,
                             'sample': ['var', 'varyin', 'varyingle']}}
         }
-        self.assert_stats(stats, expected)
+        self.assert_stats(mtresult.stats, expected)
