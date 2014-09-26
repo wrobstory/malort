@@ -21,16 +21,20 @@ class TestCore(TestHelpers):
         mtresult = mt.analyze(TEST_FILES_1)
         expected = {
         'charfield': {'str': {'count': 4, 'max': 11, 'mean': 11.0,
-                              'min': 11, 'sample': ['fixedlength']}},
+                              'min': 11, 'sample': ['fixedlength']},
+                      'base_key': 'charfield'},
         'floatfield': {'float': {'count': 4, 'max': 10.8392, 'mean': 5.243,
                                  'min': 2.345, 'max_precision': 6,
-                                 'max_scale': 4, 'fixed_length': False}},
+                                 'max_scale': 4, 'fixed_length': False},
+                       'base_key': 'floatfield'},
         'intfield': {'int': {'count': 4, 'max': 20, 'mean': 12.5,
-                             'min': 5}},
+                             'min': 5},
+                     'base_key': 'intfield'},
         'varcharfield': {'str': {'count': 4, 'max': 12, 'mean': 7.5,
                                  'min': 3,
                                  'sample': ['var', 'varyin', 'varyingle',
-                                            'varyinglengt']}}
+                                            'varyinglengt']},
+                         'base_key': 'varcharfield'}
         }
         self.assert_stats(mtresult.stats, expected)
         self.assertDictEqual(mtresult.get_conflicting_types(), {})
@@ -43,16 +47,20 @@ class TestCore(TestHelpers):
                               'max_precision': 2, 'max_scale': 1,
                               'fixed_length': True},
                     'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
-                            'sample': ['bar']}},
+                            'sample': ['bar']},
+                    'base_key': 'bar'},
             'baz': {'int': {'count': 2, 'max': 2, 'mean': 1.5, 'min': 1},
                     'str': {'count': 2, 'max': 5, 'mean': 5.0, 'min': 5,
-                            'sample': ['fixed']}},
+                            'sample': ['fixed']},
+                    'base_key': 'baz'},
             'foo': {'int': {'count': 2, 'max': 1000, 'mean': 505.0, 'min': 10},
                     'str': {'count': 2, 'max': 3, 'mean': 3.0, 'min': 3,
-                            'sample': ['foo']}},
+                            'sample': ['foo']},
+                    'base_key': 'foo'},
             'qux': {'int': {'count': 1, 'max': 10, 'mean': 10.0, 'min': 10},
                     'str': {'count': 3, 'max': 9, 'mean': 6.0, 'min': 3,
-                            'sample': ['var', 'varyin', 'varyingle']}}
+                            'sample': ['var', 'varyin', 'varyingle']},
+                    'base_key': 'qux'}
         }
         self.assert_stats(mtresult.stats, expected)
         self.assert_stats(mtresult.get_conflicting_types(), expected)

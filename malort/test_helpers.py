@@ -29,5 +29,7 @@ class TestHelpers(unittest.TestCase):
                                 self.assertIn(item, expected[key][typek][k])
                         else:
                             self.assertEquals(expected[key][typek][k], v)
+                elif typek == 'base_key':
+                    self.assertEquals(typev, expected[key][typek])
                 else:
                     self.assertDictEqual(typev, expected[key][typek])

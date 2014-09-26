@@ -120,7 +120,7 @@ def update_entry_stats(value, current_stats):
     return value_type, new_stats
 
 
-def recur_dict(value, stats):
+def recur_dict(value, stats, parent=None):
     """
     Recurse through a dict `value` and update `stats` for each field.
     Can handle nested dicts and lists of dicts, but will raise exception
@@ -130,23 +130,29 @@ def recur_dict(value, stats):
     ----------
     value: dict
     stats: dict
+    parent: string, default None
+        Parent key to get key nesting depth.
     """
+
+    parent = parent or ''
 
     if isinstance(value, dict):
         for k, v in value.items():
+            parent_path = '.'.join([parent, k]) if parent != '' else k
             if isinstance(v, (list, dict)):
-                recur_dict(v, stats)
+                recur_dict(v, stats, parent_path)
             else:
-                if k not in stats:
-                    stats[k] = {}
-                current_stats = stats.get(k)
+                if parent_path not in stats:
+                    stats[parent_path] = {}
+                current_stats = stats.get(parent_path)
                 value_type, new_stats = update_entry_stats(v, current_stats)
                 current_stats[value_type] = new_stats
+                current_stats['base_key'] = k
 
     elif isinstance(value, list):
         for v in value:
             if isinstance(v, (list, dict)):
-                recur_dict(v, stats)
+                recur_dict(v, stats, parent)
             else:
                 raise ValueError('List of values found. Malort can only pro'
                                  'cess key: value pairs!')

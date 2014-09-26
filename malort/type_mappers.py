@@ -99,6 +99,7 @@ class TypeMappers(object):
         type_mapping = {}
         for key, value in self.stats.items():
             type_keys = list(value.keys())
+            type_keys.remove('base_key')
             if len(type_keys) > 1:
                 type_mapping[key] = 'Multiple types detected.'
             else:

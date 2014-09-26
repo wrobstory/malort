@@ -56,7 +56,8 @@ class TestUpdateEntryStats(TestHelpers):
         vtype1, update_1 = mt.stats.update_entry_stats(True, {})
         self.assertEquals(update_1, {'count': 1})
 
-        vtype2, update_2 = mt.stats.update_entry_stats(False, {'bool': update_1})
+        vtype2, update_2 = mt.stats.update_entry_stats(False,
+                                                       {'bool': update_1})
         self.assertEquals(update_2, {'count': 2})
 
         for v in [vtype1, vtype2]:
@@ -99,13 +100,16 @@ class TestRecurDict(TestHelpers):
     def test_recur_simple(self):
         simple1 = {'key1': 1, 'key2': 'Foo', 'key3': 4.0, 'key4': True}
         expected = {
-            'key1': {'int': {'count': 1, 'max': 1, 'mean': 1.0, 'min': 1}},
+            'key1': {'int': {'count': 1, 'max': 1, 'mean': 1.0, 'min': 1},
+                     'base_key': 'key1'},
             'key2': {'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
-                             'sample': ['Foo']}},
+                             'sample': ['Foo']},
+                     'base_key': 'key2'},
             'key3': {'float': {'count': 1, 'max': 4.0, 'mean': 4.0,
                                'min': 4.0, 'max_precision': 2,
-                               'max_scale': 1, 'fixed_length': True}},
-            'key4': {'bool': {'count': 1}}
+                               'max_scale': 1, 'fixed_length': True},
+                     'base_key': 'key3'},
+            'key4': {'bool': {'count': 1}, 'base_key': 'key4'}
         }
 
         stats = mt.stats.recur_dict(simple1, {})
@@ -114,7 +118,7 @@ class TestRecurDict(TestHelpers):
         updated_stats = mt.stats.recur_dict({'key1': 2}, stats)
         self.assertDictEqual(updated_stats['key1'],
                              {'int': {'count': 2, 'max': 2, 'mean': 1.5,
-                                      'min': 1}})
+                                      'min': 1}, 'base_key': 'key1'})
 
 
     def test_recur_depth_one(self):
@@ -124,35 +128,106 @@ class TestRecurDict(TestHelpers):
                 'key1': 2, 'key2': 'Foooo', 'key3': 8.0, 'key4': False,
             }
         }
-        expected = {
-            'key1': {'int': {'count': 2, 'max': 2, 'mean': 1.5, 'min': 1}},
-            'key2': {'str': {'count': 2, 'max': 5, 'mean': 4.0, 'min': 3,
-                             'sample': ['Foo', 'Foooo']}},
-            'key3': {'float': {'count': 2, 'max': 8.0, 'mean': 6.0,
-                               'min': 4.0, 'max_precision': 2,
-                               'max_scale': 1, 'fixed_length': True}},
-            'key4': {'bool': {'count': 2}}
-        }
+        expected = {'key1': {'base_key': 'key1',
+                             'int': {'count': 1, 'max': 1, 'mean': 1.0,
+                                     'min': 1}},
+                    'key2': {'base_key': 'key2',
+                             'str': {'count': 1,
+                                     'max': 3,
+                                     'mean': 3.0,
+                                     'min': 3,
+                                     'sample': ['Foo']}},
+                    'key3': {'base_key': 'key3',
+                             'float': {'count': 1,
+                                       'fixed_length': True,
+                                       'max': 4.0,
+                                       'max_precision': 2,
+                                       'max_scale': 1,
+                                       'mean': 4.0,
+                                       'min': 4.0}},
+                    'key4': {'base_key': 'key4', 'bool': {'count': 1}},
+                    'key5.key1': {'base_key': 'key1',
+                                  'int': {'count': 1, 'max': 2, 'mean': 2.0,
+                                          'min': 2}},
+                    'key5.key2': {'base_key': 'key2',
+                                  'str': {'count': 1,
+                                          'max': 5,
+                                          'mean': 5.0,
+                                          'min': 5,
+                                          'sample': ['Foooo']}},
+                    'key5.key3': {'base_key': 'key3',
+                                  'float': {'count': 1,
+                                            'fixed_length': True,
+                                            'max': 8.0,
+                                            'max_precision': 2,
+                                            'max_scale': 1,
+                                            'mean': 8.0,
+                                            'min': 8.0}},
+                    'key5.key4': {'base_key': 'key4', 'bool': {'count': 1}}}
 
         stats = mt.stats.recur_dict(depth_one, {})
         self.assert_stats(stats, expected)
 
     @property
     def depth_two_expected(self):
-        return {
-            'key1': {'int': {'count': 2, 'max': 2, 'mean': 1.5, 'min': 1},
-                     'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
-                             'sample': ['Foo']}},
-            'key2': {'float': {'count': 1, 'max': 3.0, 'mean': 3.0, 'min': 3.0,
-                               'max_precision': 2, 'max_scale': 1,
-                               'fixed_length': True},
-                     'str': {'count': 2, 'max': 5, 'mean': 4.0, 'min': 3,
-                             'sample': ['Foo', 'Foooo']}},
-            'key3': {'float': {'count': 3, 'max': 8.0, 'mean': 4.667,
-                               'min': 2.0, 'max_precision': 2,
-                               'max_scale': 1, 'fixed_length': True}},
-            'key4': {'bool': {'count': 3}}
-        }
+        return {'key1': {'base_key': 'key1',
+                         'int': {'count': 1, 'max': 1, 'mean': 1.0, 'min': 1}},
+                'key2': {'base_key': 'key2',
+                         'str': {'count': 1,
+                                 'max': 3,
+                                 'mean': 3.0,
+                                 'min': 3,
+                                 'sample': ['Foo']}},
+                'key3': {'base_key': 'key3',
+                         'float': {'count': 1,
+                                   'fixed_length': True,
+                                   'max': 4.0,
+                                   'max_precision': 2,
+                                   'max_scale': 1,
+                                   'mean': 4.0,
+                                   'min': 4.0}},
+                'key4': {'base_key': 'key4', 'bool': {'count': 1}},
+                'key5.key1': {'base_key': 'key1',
+                              'int': {'count': 1, 'max': 2, 'mean': 2.0,
+                                      'min': 2}},
+                'key5.key2': {'base_key': 'key2',
+                              'str': {'count': 1,
+                                      'max': 5,
+                                      'mean': 5.0,
+                                      'min': 5,
+                                      'sample': ['Foooo']}},
+                'key5.key3': {'base_key': 'key3',
+                              'float': {'count': 1,
+                                        'fixed_length': True,
+                                        'max': 8.0,
+                                        'max_precision': 2,
+                                        'max_scale': 1,
+                                        'mean': 8.0,
+                                        'min': 8.0}},
+                'key5.key4': {'base_key': 'key4', 'bool': {'count': 1}},
+                'key5.key6.key1': {'base_key': 'key1',
+                                   'str': {'count': 1,
+                                           'max': 3,
+                                           'mean': 3.0,
+                                           'min': 3,
+                                           'sample': ['Foo']}},
+                'key5.key6.key2': {'base_key': 'key2',
+                                   'float': {'count': 1,
+                                             'fixed_length': True,
+                                             'max': 3.0,
+                                             'max_precision': 2,
+                                             'max_scale': 1,
+                                             'mean': 3.0,
+                                             'min': 3.0}},
+                'key5.key6.key3': {'base_key': 'key3',
+                                   'float': {'count': 1,
+                                             'fixed_length': True,
+                                             'max': 2.0,
+                                             'max_precision': 2,
+                                             'max_scale': 1,
+                                             'mean': 2.0,
+                                             'min': 2.0}},
+                'key5.key6.key4': {'base_key': 'key4', 'bool': {'count': 1}}}
 
     def test_recur_depth_two(self):
         depth_two = {

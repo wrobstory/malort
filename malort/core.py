@@ -49,7 +49,9 @@ class MalortStats(TypeMappers):
         """Return only the stats where there are multiple types detected"""
         conflicted = {}
         for k, v in self.stats.items():
-            if len(v.keys()) > 1:
+            type_keys = list(v.keys())
+            type_keys.remove('base_key')
+            if len(type_keys) > 1:
                 conflicted[k] = v
 
         return conflicted
