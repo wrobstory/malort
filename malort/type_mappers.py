@@ -37,12 +37,23 @@ class RedshiftMapper(AbstractMapper):
 
     @staticmethod
     def strings(stat):
-        if stat['min'] == stat['max'] == int(stat['mean']):
-            return 'char({})'.format(stat['max'])
-        elif stat['max'] > 65535:
-            return 'Too large for any char column!'
+        trues = ['TRUE', 't', 'true', 'y', 'yes']
+        falses = ['FALSE', 'f', 'false', 'n', 'no']
+        matcher_bool = []
+        for entry in stat['sample']:
+            if entry in trues or entry in falses:
+                matcher_bool.append(True)
+            else:
+                matcher_bool.append(False)
+        if all(matcher_bool):
+            return "BOOLEAN"
         else:
-            return 'varchar({})'.format(stat['max'])
+            if stat['min'] == stat['max'] == int(stat['mean']):
+                return 'char({})'.format(stat['max'])
+            elif stat['max'] > 65535:
+                return 'Too large for any char column!'
+            else:
+                return 'varchar({})'.format(stat['max'])
 
     @staticmethod
     def ints(stat):

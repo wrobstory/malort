@@ -65,7 +65,8 @@ class MalortStats(TypeMappers):
         """
         import pandas as pd
 
-        df_cols = ['key', 'count', 'type', 'mean', 'max', 'min', 'sample']
+        df_cols = ['key', 'count', 'type', 'mean', 'max', 'min',
+                   'max_precision', 'max_scale', 'fixed_length', 'sample']
 
         if include_db_types:
             db_type_getters = [('redshift_types', self.get_redshift_types)]

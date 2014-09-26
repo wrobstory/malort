@@ -39,15 +39,21 @@ class TestRedshiftMapper(unittest.TestCase):
         self.assertEqual(self.rs.booleans({}), "BOOLEAN")
 
     def test_strings(self):
-        stat = {'min': 5, 'max': 5, 'mean': 5.0}
-        self.assertEqual(self.rs.strings(stat), 'char(5)')
+        stats = {'min': 5, 'max': 5, 'mean': 5.0, 'sample': ['Foo']}
+        self.assertEqual(self.rs.strings(stats), 'char(5)')
 
-        stat['max'] = 70000
-        self.assertEqual(self.rs.strings(stat),
+        stats['max'] = 70000
+        self.assertEqual(self.rs.strings(stats),
                          'Too large for any char column!')
 
-        stat['max'] = 6
-        self.assertEqual(self.rs.strings(stat), 'varchar(6)')
+        stats['max'] = 6
+        self.assertEqual(self.rs.strings(stats), 'varchar(6)')
+
+        stats['sample'] = ['TRUE', 'FALSE', 'TRUE']
+        self.assertEqual(self.rs.strings(stats), "BOOLEAN")
+
+        stats['sample'] = ['t', 'yes', 'false']
+        self.assertEqual(self.rs.strings(stats), "BOOLEAN")
 
     def test_ints(self):
         stats = {'min': 45, 'max': 45}
