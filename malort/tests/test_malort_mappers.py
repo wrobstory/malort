@@ -8,7 +8,8 @@ Test Runner: PyTest
 import unittest
 
 import malort as mt
-from malort.test_helpers import TestHelpers, TEST_FILES_1, TEST_FILES_2
+from malort.test_helpers import (TestHelpers, TEST_FILES_1, TEST_FILES_2,
+                                 TEST_FILES_3)
 
 
 class TestTypeMappers(unittest.TestCase):
@@ -29,6 +30,16 @@ class TestTypeMappers(unittest.TestCase):
         types = mtresult.get_redshift_types()
         for k, v in types.items():
             self.assertEqual(v, 'Multiple types detected.')
+
+    def test_files_3(self):
+        mtresult = mt.analyze(TEST_FILES_3)
+        types = mtresult.get_redshift_types()
+        expected = {
+            'baz.qux': 'varchar(5)',
+            'foo.bar': 'SMALLINT',
+            'qux': 'BOOLEAN'
+        }
+        self.assertDictEqual(types, expected)
 
 
 class TestRedshiftMapper(unittest.TestCase):

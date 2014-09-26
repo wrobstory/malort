@@ -13,6 +13,8 @@ TEST_FILES_1 = os.path.normpath(os.path.join(os.path.abspath(__file__),
                                 '..', 'tests', 'test_files'))
 TEST_FILES_2 = os.path.normpath(os.path.join(os.path.abspath(__file__),
                                 '..', 'tests', 'test_files_delimited'))
+TEST_FILES_3 = os.path.normpath(os.path.join(os.path.abspath(__file__),
+                                '..', 'tests', 'test_files_nested'))
 
 
 class TestHelpers(unittest.TestCase):

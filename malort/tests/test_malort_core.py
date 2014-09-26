@@ -12,7 +12,8 @@ could contain, not the exact values.
 import os
 
 import malort as mt
-from malort.test_helpers import TestHelpers, TEST_FILES_1, TEST_FILES_2
+from malort.test_helpers import (TestHelpers, TEST_FILES_1, TEST_FILES_2,
+                                 TEST_FILES_3)
 
 
 class TestCore(TestHelpers):
@@ -62,5 +63,20 @@ class TestCore(TestHelpers):
                             'sample': ['var', 'varyin', 'varyingle']},
                     'base_key': 'qux'}
         }
+        self.assert_stats(mtresult.stats, expected)
+        self.assert_stats(mtresult.get_conflicting_types(), expected)
+
+    def test_files_3(self):
+        mtresult = mt.analyze(TEST_FILES_3)
+        expected = {'baz.qux': {'base_key': 'qux',
+                                'str': {'count': 3,
+                                        'max': 5,
+                                        'mean': 3.667,
+                                        'min': 3,
+                                        'sample': ['One', 'Two', 'Three']}},
+                    'foo.bar': {'base_key': 'bar',
+                                'int': {'count': 3, 'max': 30, 'mean': 20.0,
+                                        'min': 10}},
+                    'qux': {'base_key': 'qux', 'bool': {'count': 1}}}
         self.assert_stats(mtresult.stats, expected)
         self.assert_stats(mtresult.get_conflicting_types(), expected)

@@ -67,7 +67,7 @@ class MalortStats(TypeMappers):
         """
         import pandas as pd
 
-        df_cols = ['key', 'count', 'type', 'mean', 'max', 'min',
+        df_cols = ['key', 'base_key', 'count', 'type', 'mean', 'max', 'min',
                    'max_precision', 'max_scale', 'fixed_length', 'sample']
 
         if include_db_types:
@@ -78,8 +78,9 @@ class MalortStats(TypeMappers):
         # Get the data into a to_dict-able format
         dictable = {}
         for i, (key, value) in enumerate(self.stats.items()):
+            base_key = value.pop('base_key')
             for ktype, stats in value.items():
-                stats.update({'key': key, 'type': ktype})
+                stats.update({'key': key, 'type': ktype, 'base_key': base_key})
                 if include_db_types:
                     for name, result in type_results:
                         stats.update({name: result[key]})
