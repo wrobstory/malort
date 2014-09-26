@@ -8,10 +8,6 @@ Why
 -----
 Because for semi-structured documents where the schema will rarely change, we'd rather have the speed and familiar query-ability of structured table columns rather than dumping the JSON blob in a single column.
 
-Why is it named Malort?
------------------------
-Because in general this is a distasteful thing to do.
-
 How
 ------
 Malort will read through a directory of .json files or flat text files with delimited JSON blobs and generate relevant statistics on each key.
@@ -30,7 +26,7 @@ For example, let's look at a directory with two JSON files, and one text file wi
  ```
 
  ```
- {"intfield": 15,"floatfield": 3.0012,"charfield": "fixedlength","varcharfield": "varyingle"}
+{"intfield": 15,"floatfield": 3.0012,"charfield": "fixedlength","varcharfield": "varyingle"}
 {"intfield": 20,"floatfield": 10.8392,"charfield": "fixedlength","varcharfield": "varyinglengt"}
 ```
 
@@ -80,3 +76,11 @@ Malort supports the ability to print the entire result as a Pandas DataFrame:
 2  varcharfield      4    str   7.500  12.0000   3.000            NaN        NaN         None        [varyin, varyingle, varyinglengt]    varchar(12)
 3     charfield      4    str  11.000  11.0000  11.000            NaN        NaN         None  [fixedlength, fixedlength, fixedlength]       char(11)
 ```
+
+Why is it named Malort?
+-----------------------
+Because this is kind of a distasteful thing to do.
+
+Couldn't I have done this with sed/awk/xargs/mapreduce?
+-------------------------------------------------------
+Yes.
