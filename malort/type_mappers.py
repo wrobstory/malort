@@ -27,6 +27,10 @@ class AbstractMapper(object):
     def floats(self):
         pass
 
+    @abstractmethod
+    def dates(self):
+        pass
+
 
 class RedshiftMapper(AbstractMapper):
     """Mapping of types/statistics to Redshift Column Types"""
@@ -76,6 +80,10 @@ class RedshiftMapper(AbstractMapper):
             else:
                 return 'FLOAT'
 
+    @staticmethod
+    def dates(stat):
+        return "TIMESTAMP"
+
 
 class TypeMappers(object):
 
@@ -94,7 +102,8 @@ class TypeMappers(object):
             'str': getattr(mapper, 'strings'),
             'int': getattr(mapper, 'ints'),
             'float': getattr(mapper, 'floats'),
-            'bool': getattr(mapper, 'booleans')
+            'bool': getattr(mapper, 'booleans'),
+            'datetime': getattr(mapper, 'dates')
         }
         type_mapping = {}
         for key, value in self.stats.items():

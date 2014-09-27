@@ -21,7 +21,8 @@ class TestTypeMappers(unittest.TestCase):
             'varcharfield': 'varchar(12)',
             'charfield': 'char(11)',
             'intfield': 'SMALLINT',
-            'floatfield': 'REAL'
+            'floatfield': 'REAL',
+            'datefield': 'TIMESTAMP'
         }
         self.assertDictEqual(types, expected)
 

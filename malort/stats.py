@@ -15,7 +15,15 @@ import json
 import os
 from os.path import isfile, join, splitext
 import random
+import re
 
+
+ISO8601 = re.compile(r"""^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]
+                      \d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]
+                      |0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|
+                      2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]
+                      \d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)
+                      ?)?)?$""", re.VERBOSE)
 
 def dict_generator(path, delimiter='\n'):
     """
@@ -53,7 +61,7 @@ def get_new_mean(value, current_mean, count):
     summed = current_mean * count
     return (summed + value)/(count + 1)
 
-def update_entry_stats(value, current_stats):
+def update_entry_stats(value, current_stats, parse_timestamps=True):
     """
     Given a value and a dict of current statistics, return a dict of new
     statistics for the given value type. Values for str reference their len.
@@ -76,6 +84,10 @@ def update_entry_stats(value, current_stats):
     # Python 2.7
     if value_type == 'unicode':
         value_type = 'str'
+
+    # Datetimes
+    if value_type == 'str' and parse_timestamps and ISO8601.match(value):
+        value_type = 'datetime'
 
     new_stats = {}
     stats = current_stats.get(value_type, {})
@@ -120,7 +132,7 @@ def update_entry_stats(value, current_stats):
     return value_type, new_stats
 
 
-def recur_dict(value, stats, parent=None):
+def recur_dict(value, stats, parent=None, **kwargs):
     """
     Recurse through a dict `value` and update `stats` for each field.
     Can handle nested dicts and lists of dicts, but will raise exception
@@ -132,6 +144,7 @@ def recur_dict(value, stats, parent=None):
     stats: dict
     parent: string, default None
         Parent key to get key nesting depth.
+    kwargs: Options for update_entry_stats
     """
 
     parent = parent or ''
@@ -145,7 +158,8 @@ def recur_dict(value, stats, parent=None):
                 if parent_path not in stats:
                     stats[parent_path] = {}
                 current_stats = stats.get(parent_path)
-                value_type, new_stats = update_entry_stats(v, current_stats)
+                value_type, new_stats = update_entry_stats(v, current_stats,
+                                                           **kwargs)
                 current_stats[value_type] = new_stats
                 current_stats['base_key'] = k
 

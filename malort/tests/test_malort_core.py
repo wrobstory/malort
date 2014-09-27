@@ -35,7 +35,8 @@ class TestCore(TestHelpers):
                                  'min': 3,
                                  'sample': ['var', 'varyin', 'varyingle',
                                             'varyinglengt']},
-                         'base_key': 'varcharfield'}
+                         'base_key': 'varcharfield'},
+        'datefield': {'datetime': {'count': 4}, 'base_key': 'datefield'}
         }
         self.assert_stats(mtresult.stats, expected)
         self.assertDictEqual(mtresult.get_conflicting_types(), {})

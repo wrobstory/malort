@@ -1,2 +1,2 @@
-{"intfield": 15,"floatfield": 3.0012,"charfield": "fixedlength","varcharfield": "varyingle"}
-{"intfield": 20,"floatfield": 10.8392,"charfield": "fixedlength","varcharfield": "varyinglengt"}
+{"intfield": 15,"floatfield": 3.0012,"charfield": "fixedlength","varcharfield": "varyingle", "datefield": "2014-09-26 17:00:00"}
+{"intfield": 20,"floatfield": 10.8392,"charfield": "fixedlength","varcharfield": "varyinglengt", "datefield": "2014-09-26 17:00:00"}

@@ -15,20 +15,21 @@ import os
 from os.path import isfile, join, splitext
 import random
 
-from malort.stats import dict_generator, recur_dict
+from malort.stats import recur_dict, dict_generator
 from malort.type_mappers import TypeMappers
 
 
-def analyze(path, delimiter='\n'):
+def analyze(path, delimiter='\n', parse_timestamps=True):
 
     stats = {}
+
     for count, blob in enumerate(dict_generator(path, delimiter)):
-        recur_dict(blob, stats)
+        recur_dict(blob, stats, parse_timestamps=parse_timestamps)
 
-    return MalortStats(stats, count)
+    return MalortResult(stats, count)
 
 
-class MalortStats(TypeMappers):
+class MalortResult(TypeMappers):
 
     def __init__(self, stats, blob_count):
         """

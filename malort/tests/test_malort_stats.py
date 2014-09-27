@@ -49,6 +49,13 @@ class TestUpdateEntryStats(TestHelpers):
                           {'count': 3, 'mean': 4.333, 'max': 5,
                            'min': 3, 'sample': ['Foooo', 'Foooo', 'Foo']})
 
+        vtype4, update_4 = mt.stats.update_entry_stats('2014-08-07 10:00:00',
+                                                       {})
+        self.assertEquals(update_4, {'count': 1})
+
+        vtype4, update_4 = mt.stats.update_entry_stats('2014-08-07', {})
+        self.assertEquals(update_4, {'count': 1})
+
         for v in [vtype1, vtype2, vtype3]:
             self.assertEquals(v, 'str')
 
