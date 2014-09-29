@@ -113,6 +113,7 @@ parse_timestamps: boolean, default True
 * `result.get_redshift_types`: Guess the Amazon Redshift column types for the result keys
 * `result.gen_redshift_jsonpaths`: Generate Redshift [jsonpaths](http://docs.aws.amazon.com/redshift/latest/dg/r_COPY_command_examples.html#copy-from-json-examples-using-jsonpaths) file
 * `result.to_dataframe`: Export the result set to a dataframe
+* `result.get_cleaned_column_names`: Clean up the result keys into lowercase, underscored column names
 
 Adding New Type Mappers
 -----------------------

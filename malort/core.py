@@ -15,6 +15,7 @@ import json
 import os
 from os.path import isfile, join, splitext
 import random
+import re
 import time
 
 from malort.stats import recur_dict, dict_generator
@@ -141,3 +142,19 @@ class MalortResult(TypeMappers):
                 json.dump(jsonpaths, f, sort_keys=True, indent=4)
         else:
             return jsonpaths
+
+    def get_cleaned_column_names(self):
+        """Clean up keys to produce underscored column names"""
+        # Source: http://stackoverflow.com/a/1176023
+        first_cap_re = re.compile('(.)([A-Z][a-z]+)')
+        all_cap_re = re.compile('([a-z0-9])([A-Z])')
+        def convert(name):
+            s1 = first_cap_re.sub(r'\1_\2', name)
+            return all_cap_re.sub(r'\1_\2', s1).lower()
+
+        fixed = []
+        for k in self.stats.keys():
+            subbed = k.replace(" ", "_").replace("-", "_")
+            fixed.append(".".join([convert(s) for s in subbed.split(".")]))
+
+        return fixed

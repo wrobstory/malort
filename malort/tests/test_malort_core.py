@@ -93,3 +93,21 @@ class TestCore(TestHelpers):
         ]}
         self.assertListEqual(sorted(jsonpaths['jsonpaths']),
                              sorted(expected['jsonpaths']))
+
+    def test_get_column_names(self):
+        mtresult = mt.analyze(TEST_FILES_3)
+        # Test hack
+        mtresult.stats = {
+            'foo.quz bar': {},
+            'foo.bazBoo': {},
+            'bar.FooBaz': {},
+            'baz.foo-bar': {}
+        }
+        names = mtresult.get_cleaned_column_names()
+        expected = [
+            'foo.quz_bar',
+            'foo.baz_boo',
+            'bar.foo_baz',
+            'baz.foo_bar'
+        ]
+        self.assertListEqual(sorted(expected), sorted(names))
