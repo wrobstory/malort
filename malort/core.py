@@ -141,6 +141,3 @@ class MalortResult(TypeMappers):
                 json.dump(jsonpaths, f, sort_keys=True, indent=4)
         else:
             return jsonpaths
-
-
-
