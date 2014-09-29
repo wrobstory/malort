@@ -10,6 +10,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
+from collections import defaultdict
 import json
 import os
 from os.path import isfile, join, splitext
@@ -20,6 +21,19 @@ from malort.type_mappers import TypeMappers
 
 
 def analyze(path, delimiter='\n', parse_timestamps=True):
+    """
+    Analyze a given directory of either .json or flat text files
+    with delimited JSON to get relevant key statistics.
+
+    Parameters
+    ----------
+    path: string
+        Path to directory
+    delimiter: string, default newline
+        For flat text files, the JSON blob delimiter
+    parse_timestamps: boolean, default True
+        If True, will attempt to regex match ISO8601 formatted parse_timestamps
+    """
 
     stats = {}
 
@@ -77,15 +91,23 @@ class MalortResult(TypeMappers):
             df_cols.extend([t[0] for t in db_type_getters])
 
         # Get the data into a to_dict-able format
-        dictable = {}
+        dictable = defaultdict(dict)
         for i, (key, value) in enumerate(self.stats.items()):
-            base_key = value.pop('base_key')
+
+            dictable[i]['base_key'] = value['base_key']
+            dictable[i]['key'] = key
+
             for ktype, stats in value.items():
-                stats.update({'key': key, 'type': ktype, 'base_key': base_key})
+
+                if ktype not in ['base_key']:
+                    dictable[i]['type'] = ktype
+
+                    for stat, statvalue in stats.items():
+                        dictable[i][stat] = statvalue
+
                 if include_db_types:
                     for name, result in type_results:
-                        stats.update({name: result[key]})
-                dictable[i] = stats
+                        dictable[i].update({name: result[key]})
 
         df = pd.DataFrame.from_dict(dictable, 'index')
 

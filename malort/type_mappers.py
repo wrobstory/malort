@@ -5,11 +5,15 @@ Malort Type Mappers
 
 Type mappings for Malort results. Can be extended for other database
 types.
+
+New Mappers must inherit from AbstractMapper and implement the five
+required type-mapping methods.
 """
 from abc import abstractmethod
 
 
 class AbstractMapper(object):
+    """New Mappers need to implement these methods"""
 
     @abstractmethod
     def booleans(self):

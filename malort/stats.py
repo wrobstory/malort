@@ -25,6 +25,17 @@ ISO8601 = re.compile(r"""^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]
                       \d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)
                       ?)?)?$""", re.VERBOSE)
 
+
+def json_catcher(blob, filepath):
+    """Wrapper to provide better error message for JSON reads"""
+    try:
+        parsed = json.loads(blob)
+    except ValueError as e:
+        raise ValueError("JSON error reading {}: {}!".format(filepath,
+                                                             e.args[0]))
+
+    return parsed
+
 def dict_generator(path, delimiter='\n'):
     """
     Given a directory path, return a generator that will return a dict for each
@@ -52,9 +63,9 @@ def dict_generator(path, delimiter='\n'):
                     blob = fread.read()
                     split = blob.split(delimiter)
                     for row in split:
-                        yield json.loads(row)
+                        yield json_catcher(row, filepath)
                 else:
-                    yield json.loads(fread.read())
+                    yield json_catcher(fread.read(), filepath)
 
 def get_new_mean(value, current_mean, count):
     """Given a value, current mean, and count, return new mean"""
