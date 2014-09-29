@@ -81,3 +81,15 @@ class TestCore(TestHelpers):
                     'qux': {'base_key': 'qux', 'bool': {'count': 1}}}
         self.assert_stats(mtresult.stats, expected)
         self.assert_stats(mtresult.get_conflicting_types(), expected)
+
+    def test_gen_redshift_jsonpaths(self):
+        mtresult = mt.analyze(TEST_FILES_3)
+        jsonpaths = mtresult.gen_redshift_jsonpaths()
+        expected = {
+            'jsonpaths': [
+                "$['foo']['bar']",
+                "$['qux']",
+                "$['baz']['qux']"
+        ]}
+        self.assertListEqual(sorted(jsonpaths['jsonpaths']),
+                             sorted(expected['jsonpaths']))

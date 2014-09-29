@@ -15,6 +15,7 @@ import json
 import os
 from os.path import isfile, join, splitext
 import random
+import time
 
 from malort.stats import recur_dict, dict_generator
 from malort.type_mappers import TypeMappers
@@ -37,15 +38,19 @@ def analyze(path, delimiter='\n', parse_timestamps=True):
 
     stats = {}
 
+    start_time = time.time()
     for count, blob in enumerate(dict_generator(path, delimiter)):
         recur_dict(blob, stats, parse_timestamps=parse_timestamps)
 
-    return MalortResult(stats, count)
+    elapsed = time.time() - start_time
+    print('Malort run finished: {} JSON blobs analyzed in {} seconds.'
+          .format(count, elapsed))
+    return MalortResult(stats, count, elapsed)
 
 
 class MalortResult(TypeMappers):
 
-    def __init__(self, stats, blob_count):
+    def __init__(self, stats, blob_count, execution_time=None):
         """
         Wrapper for malort stats that can generate type maps and
         DataFrames
@@ -56,9 +61,12 @@ class MalortResult(TypeMappers):
             Malort stats dict
         blob_count: int
             Number of JSON blobs read into result
+        execution_time: float, default None
+            Execution time in seconds
         """
         self.stats = stats
         self.count = blob_count
+        self.execution_time = execution_time
 
     def get_conflicting_types(self):
         """Return only the stats where there are multiple types detected"""
@@ -112,3 +120,27 @@ class MalortResult(TypeMappers):
         df = pd.DataFrame.from_dict(dictable, 'index')
 
         return df.reindex_axis(df_cols, axis=1)
+
+    def gen_redshift_jsonpaths(self, filepath=None):
+        """Generate Redshift jsonpath file for results
+
+        Parameters
+        ----------
+        filepath: str, default None
+            If path is provided, will write jsonpaths to file.
+        """
+        jsonpaths = {"jsonpaths": []}
+        for k in self.stats.keys():
+            parts = k.split('.')
+            path = '$'
+            for p in parts:
+                path = path + "['{}']".format(p)
+            jsonpaths['jsonpaths'].append(path)
+        if filepath:
+            with open(filepath, 'w') as f:
+                json.dump(jsonpaths, f, sort_keys=True, indent=4)
+        else:
+            return jsonpaths
+
+
+

@@ -111,6 +111,7 @@ parse_timestamps: boolean, default True
 * `result.stats`: Dictionary of key statistics
 * `result.get_conflicting_types`: Return only stats where there are multiple types detected for a given key
 * `result.get_redshift_types`: Guess the Amazon Redshift column types for the result keys
+* `result.gen_redshift_jsonpaths`: Generate Redshift [jsonpaths](http://docs.aws.amazon.com/redshift/latest/dg/r_COPY_command_examples.html#copy-from-json-examples-using-jsonpaths) file
 * `result.to_dataframe`: Export the result set to a dataframe
 
 Adding New Type Mappers
@@ -136,3 +137,7 @@ Because this is kind of a distasteful thing to do in the first place.
 Couldn't I have done this with sed/awk/xargs/mapreduce?
 -------------------------------------------------------
 Yes.
+
+How fast is it?
+---------------
+With timestamp parsing turned on, I used Malort to process 1.6 GB of files (1,184,104 nested JSON blobs) in 8 minutes. There are undoubtedly ways to do it faster.
