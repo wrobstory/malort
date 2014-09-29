@@ -26,7 +26,7 @@ ISO8601 = re.compile(r"""^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]
                       ?)?)?$""", re.VERBOSE)
 
 
-def json_catcher(blob, filepath):
+def catch_json_error(blob, filepath):
     """Wrapper to provide better error message for JSON reads"""
     try:
         parsed = json.loads(blob)
@@ -63,16 +63,16 @@ def dict_generator(path, delimiter='\n'):
                     blob = fread.read()
                     split = blob.split(delimiter)
                     for row in split:
-                        yield json_catcher(row, filepath)
+                        yield catch_json_error(row, filepath)
                 else:
-                    yield json_catcher(fread.read(), filepath)
+                    yield catch_json_error(fread.read(), filepath)
 
 def get_new_mean(value, current_mean, count):
     """Given a value, current mean, and count, return new mean"""
     summed = current_mean * count
     return (summed + value)/(count + 1)
 
-def update_entry_stats(value, current_stats, parse_timestamps=True):
+def updated_entry_stats(value, current_stats, parse_timestamps=True):
     """
     Given a value and a dict of current statistics, return a dict of new
     statistics for the given value type. Values for str reference their len.
@@ -169,8 +169,8 @@ def recur_dict(value, stats, parent=None, **kwargs):
                 if parent_path not in stats:
                     stats[parent_path] = {}
                 current_stats = stats.get(parent_path)
-                value_type, new_stats = update_entry_stats(v, current_stats,
-                                                           **kwargs)
+                value_type, new_stats = updated_entry_stats(v, current_stats,
+                                                            **kwargs)
                 current_stats[value_type] = new_stats
                 current_stats['base_key'] = k
 

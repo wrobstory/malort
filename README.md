@@ -140,4 +140,4 @@ Yes.
 
 How fast is it?
 ---------------
-With timestamp parsing turned on, I used Malort to process 1.6 GB of files (1,184,104 nested JSON blobs) in 8 minutes. There are undoubtedly ways to do it faster.
+With timestamp parsing turned on, I used Malort to process 2.1 GB of files (1,326,794 nested JSON blobs) in 8 minutes. There are undoubtedly ways to do it faster.
