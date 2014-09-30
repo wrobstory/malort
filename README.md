@@ -15,7 +15,7 @@ Malort is a tool for taking nested JSON data and trying to sniff out the appropr
 
 The Problem
 -----------
-A producer is dumping unstructured .json or delimited json blobs into a directory/S3 and you need to warehouse it somewhere. You don't know the schema, but want to find out if it's stable enough to break out into columns, or if you need to dump the whole blob into a JSON column type.
+A producer is dumping semi-structured .json or delimited json blobs into a directory/S3 and you need to warehouse it somewhere. You don't know the schema, but want to find out if it's stable enough to break out into columns, or if you need to dump the whole blob into a JSON column type.
 
 Why
 -----
