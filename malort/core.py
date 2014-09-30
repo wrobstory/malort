@@ -145,16 +145,19 @@ class MalortResult(TypeMappers):
 
     def get_cleaned_column_names(self):
         """Clean up keys to produce underscored column names"""
-        # Source: http://stackoverflow.com/a/1176023
-        first_cap_re = re.compile('(.)([A-Z][a-z]+)')
-        all_cap_re = re.compile('([a-z0-9])([A-Z])')
-        def convert(name):
-            s1 = first_cap_re.sub(r'\1_\2', name)
-            return all_cap_re.sub(r'\1_\2', s1).lower()
-
         fixed = []
         for k in self.stats.keys():
-            subbed = k.replace(" ", "_").replace("-", "_")
-            fixed.append(".".join([convert(s) for s in subbed.split(".")]))
+            pieces = []
+            splitter = k.split(".")
+            for s in splitter:
+                either = re.split(' |-', s)
+                if len(either) > 1:
+                    parts = [either[0].lower()]
+                    parts.extend([w.title() for w in either[1:]])
+                    piece = "".join(parts)
+                else:
+                    piece = either[0][0].lower() + either[0][1:]
+                pieces.append(piece)
+            fixed.append("_".join(pieces))
 
         return fixed

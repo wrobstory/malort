@@ -101,13 +101,15 @@ class TestCore(TestHelpers):
             'foo.quz bar': {},
             'foo.bazBoo': {},
             'bar.FooBaz': {},
-            'baz.foo-bar': {}
+            'baz.foo-bar': {},
+            'qux.BazBoo.foo baz.Foo-bar': {}
         }
         names = mtresult.get_cleaned_column_names()
         expected = [
-            'foo.quz_bar',
-            'foo.baz_boo',
-            'bar.foo_baz',
-            'baz.foo_bar'
+            'baz_fooBar',
+            'foo_quzBar',
+            'bar_fooBaz',
+            'foo_bazBoo',
+            'qux_bazBoo_fooBaz_fooBar'
         ]
         self.assertListEqual(sorted(expected), sorted(names))
