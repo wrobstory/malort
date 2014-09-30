@@ -15,7 +15,9 @@ setup(
     url='https://github.com/wrobstory/malort',
     keywords='JSON Postgres postgres json',
     classifiers=['Development Status :: 4 - Beta',
-                 'Programming Language :: Python :: 3.4.1',
+                 'Programming Language :: Python',
+                 'Programming Language :: Python :: 2',
+                 'Programming Language :: Python :: 3',
                  'License :: OSI Approved :: MIT License'],
     packages=['malort']
 )
