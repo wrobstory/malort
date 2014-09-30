@@ -1,6 +1,6 @@
 # Malort
 
-### JSON -> Column Types
+### JSON -> Relational DB Column Types
 
 Malort is a tool for taking nested JSON data and trying to sniff out the appropriate relational db column types from the keys and values. It currently only supports Redshift, but the column mappers can be easily extended to other DBs.
 
