@@ -151,3 +151,7 @@ Yes.
 How fast is it?
 ---------------
 With timestamp parsing turned on, I used Malort to process 2.1 GB of files (1,326,794 nested JSON blobs) in 8 minutes. There are undoubtedly ways to do it faster.
+
+Should I use the column type results verbatim?
+----------------------------------------------
+Probably not- they're meant to be a guide, not a CREATE TABLE statement. It's up to you to determine whether your data represents a statistically significant enough sample to set fixed-width columns with certainty, or whether you might anticipate schema changes in the future. Like a lot of data tools, it's meant to help guide your engineering judgement.
