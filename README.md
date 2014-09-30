@@ -1,11 +1,11 @@
 ```
 
      _____________________________/\/\______________________________/\/\_____
-    _/\/\/\__/\/\____/\/\/\______/\/\______/\/\/\____/\/\__/\/\__/\/\/\/\/\_ 
-   _/\/\/\/\/\/\/\______/\/\____/\/\____/\/\__/\/\__/\/\/\/\______/\/\_____  
-  _/\/\__/\__/\/\__/\/\/\/\____/\/\____/\/\__/\/\__/\/\__________/\/\_____   
- _/\/\______/\/\__/\/\/\/\/\__/\/\/\____/\/\/\____/\/\__________/\/\/\___    
-________________________________________________________________________     
+    _/\/\/\__/\/\____/\/\/\______/\/\______/\/\/\____/\/\__/\/\__/\/\/\/\/\_
+   _/\/\/\/\/\/\/\______/\/\____/\/\____/\/\__/\/\__/\/\/\/\______/\/\_____
+  _/\/\__/\__/\/\__/\/\/\/\____/\/\____/\/\__/\/\__/\/\__________/\/\_____
+ _/\/\______/\/\__/\/\/\/\/\__/\/\/\____/\/\/\____/\/\__________/\/\/\___
+________________________________________________________________________
 
 ```
 
@@ -13,9 +13,13 @@ ________________________________________________________________________
 
 Malort is a tool for taking nested JSON data and trying to sniff out the appropriate relational db column types from the keys and values. It currently only supports Redshift, but the column mappers can be easily extended to other DBs.
 
+The Problem
+-----------
+A producer is dumping unstructured .json or delimited json blobs into a directory/S3 and you need to warehouse it somewhere. You don't know the schema, but want to find out if it's stable enough to break out into columns, or if you need to dump the whole blob into a JSON column type.
+
 Why
 -----
-Because for (mostly) structured documents where we're expecting the schema to rarely change, we'd rather have the speed and familiar query/index-ability of table columns rather than dumping the entire JSON blob into a single column.
+Because for (mostly) structured documents where we're expecting the schema to rarely change, we'd rather have the speed and familiar query/index-ability of table columns rather than dumping the entire blob into a single column.
 
 How
 ------
