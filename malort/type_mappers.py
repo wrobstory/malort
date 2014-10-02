@@ -115,6 +115,8 @@ class TypeMappers(object):
             type_keys.remove('base_key')
             if len(type_keys) > 1:
                 type_mapping[key] = 'Multiple types detected.'
+            elif type_keys[0] == 'NoneType':
+                type_mapping[key] = 'All fields null!'
             else:
                 type_mapping[key] = type_to_mapper[type_keys[0]](
                     value[type_keys[0]]
