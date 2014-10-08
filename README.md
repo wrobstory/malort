@@ -103,6 +103,10 @@ Malort supports the ability to print the entire result as a Pandas DataFrame:
 4  parentkey.datefield     datefield      4  datetime     NaN      NaN     NaN            NaN        NaN         None                                     None      TIMESTAMP
 ```
 
+Install
+-------
+`$ pip install malort`
+
 API
 ---
 * `result = malort.analyze(path, delimiter='\n', parse_timestamps=True)`
