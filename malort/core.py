@@ -22,7 +22,7 @@ from malort.stats import recur_dict, dict_generator
 from malort.type_mappers import TypeMappers
 
 
-def analyze(path, delimiter='\n', parse_timestamps=True):
+def analyze(path, delimiter='\n', parse_timestamps=True, **kwargs):
     """
     Analyze a given directory of either .json or flat text files
     with delimited JSON to get relevant key statistics.
@@ -35,12 +35,14 @@ def analyze(path, delimiter='\n', parse_timestamps=True):
         For flat text files, the JSON blob delimiter
     parse_timestamps: boolean, default True
         If True, will attempt to regex match ISO8601 formatted parse_timestamps
+    kwargs: 
+        passed into json.loads. Here you can specify encoding, etc. 
     """
 
     stats = {}
 
     start_time = time.time()
-    for count, blob in enumerate(dict_generator(path, delimiter)):
+    for count, blob in enumerate(dict_generator(path, delimiter, **kwargs), start=1):
         recur_dict(blob, stats, parse_timestamps=parse_timestamps)
 
     elapsed = time.time() - start_time

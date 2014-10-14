@@ -25,18 +25,30 @@ ISO8601 = re.compile(r"""^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]
                       \d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)
                       ?)?)?$""", re.VERBOSE)
 
+def delimited(file, delimiter='\n', bufsize=4096):
+    buf = ''
+    while True:
+        newbuf = file.read(bufsize)
+        if not newbuf:
+            yield buf
+            return
+        buf += newbuf
+        lines = buf.split(delimiter)
+        for line in lines[:-1]:
+            yield line
+        buf = lines[-1]
 
-def catch_json_error(blob, filepath):
+def catch_json_error(blob, filepath, **kwargs):
     """Wrapper to provide better error message for JSON reads"""
     try:
-        parsed = json.loads(blob)
+        parsed = json.loads(blob, **kwargs)
     except ValueError as e:
         raise ValueError("JSON error reading {}: {}!".format(filepath,
                                                              e.args[0]))
 
     return parsed
 
-def dict_generator(path, delimiter='\n'):
+def dict_generator(path, delimiter='\n', **kwargs):
     """
     Given a directory path, return a generator that will return a dict for each
     .json file and `delimiter` separated blob in a text file.
@@ -59,13 +71,13 @@ def dict_generator(path, delimiter='\n'):
         filepath = join(path, f)
         if isfile(filepath):
             with open(filepath, 'r') as fread:
+                blobs = delimited(fread, delimiter)
                 if splitext(f)[1] != '.json':
-                    blob = fread.read()
-                    split = blob.split(delimiter)
-                    for row in split:
-                        yield catch_json_error(row, filepath)
+                    for row in blobs:
+                        yield catch_json_error(row, filepath, **kwargs)
+
                 else:
-                    yield catch_json_error(fread.read(), filepath)
+                    yield catch_json_error(fread.read(), filepath, **kwargs)
 
 def get_new_mean(value, current_mean, count):
     """Given a value, current mean, and count, return new mean"""
