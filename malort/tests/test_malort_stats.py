@@ -106,7 +106,8 @@ class TestUpdateEntryStats(TestHelpers):
 class TestRecurDict(TestHelpers):
 
     def test_recur_simple(self):
-        simple1 = {'key1': 1, 'key2': 'Foo', 'key3': 4.0, 'key4': True}
+        simple1 = {'key1': 1, 'key2': 'Foo', 'key3': 4.0, 'key4': True,
+                   'key5': ['one', 'two', 'three']}
         expected = {
             'key1': {'int': {'count': 1, 'max': 1, 'mean': 1.0, 'min': 1},
                      'base_key': 'key1'},
@@ -117,7 +118,10 @@ class TestRecurDict(TestHelpers):
                                'min': 4.0, 'max_precision': 2,
                                'max_scale': 1, 'fixed_length': True},
                      'base_key': 'key3'},
-            'key4': {'bool': {'count': 1}, 'base_key': 'key4'}
+            'key4': {'bool': {'count': 1}, 'base_key': 'key4'},
+            'key5': {'str': {'count': 1, 'max': 23, 'mean': 23.0, 'min': 23,
+                     'sample': ['["one", "two", "three"]']},
+                     'base_key': 'key5'}
         }
 
         stats = mt.stats.recur_dict(simple1, {})
@@ -263,11 +267,36 @@ class TestRecurDict(TestHelpers):
         stats = mt.stats.recur_dict(with_list, {})
         self.assert_stats(stats, self.depth_two_expected)
 
-    def test_raises_with_list_of_values(self):
-        with_values = {
-            'key1': 'Foo',
-            'key2': ['Foo', 'Bar']
+    def test_recur_with_val_array(self):
+        with_list = {
+          "key1": 1,
+          "key2": ["foo", "bar", "baz"],
+          "key3": [{"key2": ["foo", "bar"]}]
         }
 
-        with pytest.raises(ValueError):
+        stats = mt.stats.recur_dict(with_list, {})
+        expected = {'key1': {'base_key': 'key1',
+                             'int': {'count': 1, 'max': 1,
+                                     'mean': 1.0, 'min': 1}},
+                    'key2': {'base_key': 'key2',
+                             'str': {'count': 1,
+                                     'max': 21,
+                                     'mean': 21.0,
+                                     'min': 21,
+                                     'sample': ['["foo", "bar", "baz"]']}},
+                    'key3.key2': {'base_key': 'key2',
+                                  'str': {'count': 1,
+                                          'max': 14,
+                                          'mean': 14.0,
+                                          'min': 14,
+                                          'sample': ['["foo", "bar"]']}}}
+        self.assert_stats(stats, expected)
+
+    def test_raises_with_list_of_unknown(self):
+        with_values = {
+            'key1': 'Foo',
+            'key2': [set('This is a set')]
+        }
+
+        with pytest.raises(TypeError):
             mt.stats.recur_dict(with_values, {})
