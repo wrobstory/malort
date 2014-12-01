@@ -158,8 +158,8 @@ def updated_entry_stats(value, current_stats, parse_timestamps=True):
 def recur_dict(value, stats, parent=None, **kwargs):
     """
     Recurse through a dict `value` and update `stats` for each field.
-    Can handle nested dicts and lists of dicts, but will raise exception
-    for list of values
+    Can handle nested dicts, lists of dicts, and lists of values (must be
+    JSON parsable)
 
     Parameters
     ----------
@@ -172,26 +172,31 @@ def recur_dict(value, stats, parent=None, **kwargs):
 
     parent = parent or ''
 
+    def update_stats(current_val, nested_path, base_key):
+        "Updater function"
+        if nested_path not in stats:
+            stats[nested_path] = {}
+        current_stats = stats.get(nested_path)
+        value_type, new_stats = updated_entry_stats(current_val, current_stats,
+                                                    **kwargs)
+        current_stats[value_type] = new_stats
+        current_stats['base_key'] = base_key
+
     if isinstance(value, dict):
         for k, v in value.items():
             parent_path = '.'.join([parent, k]) if parent != '' else k
             if isinstance(v, (list, dict)):
                 recur_dict(v, stats, parent_path)
             else:
-                if parent_path not in stats:
-                    stats[parent_path] = {}
-                current_stats = stats.get(parent_path)
-                value_type, new_stats = updated_entry_stats(v, current_stats,
-                                                            **kwargs)
-                current_stats[value_type] = new_stats
-                current_stats['base_key'] = k
+                update_stats(v, parent_path, k)
 
     elif isinstance(value, list):
         for v in value:
             if isinstance(v, (list, dict)):
                 recur_dict(v, stats, parent)
             else:
-                raise ValueError('List of values found. Malort can only pro'
-                                 'cess key: value pairs!')
+                base_key = parent.split(".")[-1]
+                update_stats(json.dumps(value), parent, base_key)
+                return stats
 
     return stats
