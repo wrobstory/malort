@@ -158,8 +158,8 @@ def updated_entry_stats(value, current_stats, parse_timestamps=True):
 def recur_dict(value, stats, parent=None, **kwargs):
     """
     Recurse through a dict `value` and update `stats` for each field.
-    Can handle nested dicts and lists of dicts, but will raise exception
-    for list of values
+    Can handle nested dicts, lists of dicts, and lists of values (must be
+    JSON parsable)
 
     Parameters
     ----------
