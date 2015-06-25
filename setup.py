@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='malort',
-    version='0.0.2',
+    version='0.0.3',
     description='JSON to Postgres Column Types',
     author='Rob Story',
     author_email='wrobstory@gmail.com',
