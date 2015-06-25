@@ -74,7 +74,8 @@ def dict_generator(path, delimiter='\n', **kwargs):
                 blobs = delimited(fread, delimiter)
                 if splitext(f)[1] != '.json':
                     for row in blobs:
-                        yield catch_json_error(row, filepath, **kwargs)
+                        if row != '':
+                            yield catch_json_error(row, filepath, **kwargs)
 
                 else:
                     yield catch_json_error(fread.read(), filepath, **kwargs)
