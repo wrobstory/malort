@@ -124,10 +124,10 @@ class TestRecurDict(TestHelpers):
                      'base_key': 'key5'}
         }
 
-        stats = mt.stats.recur_dict(simple1, {})
+        stats = mt.stats.recur_dict({}, simple1)
         self.assertDictEqual(stats, expected)
 
-        updated_stats = mt.stats.recur_dict({'key1': 2}, stats)
+        updated_stats = mt.stats.recur_dict(stats, {'key1': 2})
         self.assertDictEqual(updated_stats['key1'],
                              {'int': {'count': 2, 'max': 2, 'mean': 1.5,
                                       'min': 1}, 'base_key': 'key1'})
@@ -177,7 +177,7 @@ class TestRecurDict(TestHelpers):
                                             'min': 8.0}},
                     'key5.key4': {'base_key': 'key4', 'bool': {'count': 1}}}
 
-        stats = mt.stats.recur_dict(depth_one, {})
+        stats = mt.stats.recur_dict({}, depth_one)
         self.assert_stats(stats, expected)
 
     @property
@@ -252,7 +252,7 @@ class TestRecurDict(TestHelpers):
             }
         }
 
-        stats = mt.stats.recur_dict(depth_two, {})
+        stats = mt.stats.recur_dict({}, depth_two)
         self.assert_stats(stats, self.depth_two_expected)
 
     def test_recur_with_array(self):
@@ -264,7 +264,7 @@ class TestRecurDict(TestHelpers):
                 ]
         }
 
-        stats = mt.stats.recur_dict(with_list, {})
+        stats = mt.stats.recur_dict({}, with_list)
         self.assert_stats(stats, self.depth_two_expected)
 
     def test_recur_with_val_array(self):
@@ -274,7 +274,7 @@ class TestRecurDict(TestHelpers):
           "key3": [{"key2": ["foo", "bar"]}]
         }
 
-        stats = mt.stats.recur_dict(with_list, {})
+        stats = mt.stats.recur_dict({}, with_list)
         expected = {'key1': {'base_key': 'key1',
                              'int': {'count': 1, 'max': 1,
                                      'mean': 1.0, 'min': 1}},
@@ -299,4 +299,4 @@ class TestRecurDict(TestHelpers):
         }
 
         with pytest.raises(TypeError):
-            mt.stats.recur_dict(with_values, {})
+            mt.stats.recur_dict({}, with_values)

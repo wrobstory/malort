@@ -6,9 +6,7 @@ Malort
 JSON -> Postgres Column types
 
 """
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
+from __future__ import absolute_import, print_function, division
 
 from collections import defaultdict
 import json
@@ -17,6 +15,8 @@ from os.path import isfile, join, splitext
 import random
 import re
 import time
+
+import dask.bag as db
 
 from malort.stats import recur_dict, dict_generator
 from malort.type_mappers import TypeMappers
@@ -35,15 +35,16 @@ def analyze(path, delimiter='\n', parse_timestamps=True, **kwargs):
         For flat text files, the JSON blob delimiter
     parse_timestamps: boolean, default True
         If True, will attempt to regex match ISO8601 formatted parse_timestamps
-    kwargs: 
-        passed into json.loads. Here you can specify encoding, etc. 
+    kwargs:
+        passed into json.loads. Here you can specify encoding, etc.
     """
 
     stats = {}
 
     start_time = time.time()
+    bag = db.from_filenames(path).map(json.loads)
     for count, blob in enumerate(dict_generator(path, delimiter, **kwargs), start=1):
-        recur_dict(blob, stats, parse_timestamps=parse_timestamps)
+        recur_dict(stats, blob, parse_timestamps=parse_timestamps)
 
     elapsed = time.time() - start_time
     print('Malort run finished: {} JSON blobs analyzed in {} seconds.'
