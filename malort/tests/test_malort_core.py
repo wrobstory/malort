@@ -13,18 +13,16 @@ import os
 
 import malort as mt
 from malort.test_helpers import (TestHelpers, TEST_FILES_1, TEST_FILES_2,
-                                 TEST_FILES_3)
+                                 TEST_FILES_3, TEST_FILES_4)
 
 
 class TestCore(TestHelpers):
 
-    def test_files_1(self):
-        mtresult = mt.analyze(TEST_FILES_1)
-        expected = {
+    expected_1_and_2 = {
         'charfield': {'str': {'count': 4, 'max': 11, 'mean': 11.0,
                               'min': 11, 'sample': ['fixedlength']},
                       'base_key': 'charfield'},
-        'floatfield': {'float': {'count': 4, 'max': 10.8392, 'mean': 5.243,
+        'floatfield': {'float': {'count': 4, 'max': 10.8392, 'mean': 5.244,
                                  'min': 2.345, 'max_precision': 6,
                                  'max_scale': 4, 'fixed_length': False},
                        'base_key': 'floatfield'},
@@ -37,12 +35,35 @@ class TestCore(TestHelpers):
                                             'varyinglengt']},
                          'base_key': 'varcharfield'},
         'datefield': {'datetime': {'count': 4}, 'base_key': 'datefield'}
-        }
-        self.assert_stats(mtresult.stats, expected)
+    }
+
+    def test_files_1(self):
+        mtresult = mt.analyze(TEST_FILES_1)
+        self.assert_stats(mtresult.stats, self.expected_1_and_2)
         self.assertDictEqual(mtresult.get_conflicting_types(), {})
 
     def test_files_2(self):
-        mtresult = mt.analyze(TEST_FILES_2, '|')
+        mtresult = mt.analyze(TEST_FILES_2)
+        self.assert_stats(mtresult.stats, self.expected_1_and_2)
+        self.assertDictEqual(mtresult.get_conflicting_types(), {})
+
+    def test_files_3(self):
+        mtresult = mt.analyze(TEST_FILES_3)
+        expected = {'baz.qux': {'base_key': 'qux',
+                                'str': {'count': 3,
+                                        'max': 5,
+                                        'mean': 3.667,
+                                        'min': 3,
+                                        'sample': ['One', 'Two', 'Three']}},
+                    'foo.bar': {'base_key': 'bar',
+                                'int': {'count': 3, 'max': 30, 'mean': 20.0,
+                                        'min': 10}},
+                    'qux': {'base_key': 'qux', 'bool': {'count': 1}}}
+        self.assert_stats(mtresult.stats, expected)
+        self.assert_stats(mtresult.get_conflicting_types(), expected)
+
+    def test_files_4(self):
+        mtresult = mt.analyze(TEST_FILES_4)
         expected = {
             'bar': {'bool': {'count': 1},
                     'float': {'count': 2, 'max': 4.0, 'mean': 3.0, 'min': 2.0,
@@ -64,21 +85,7 @@ class TestCore(TestHelpers):
                             'sample': ['var', 'varyin', 'varyingle']},
                     'base_key': 'qux'}
         }
-        self.assert_stats(mtresult.stats, expected)
-        self.assert_stats(mtresult.get_conflicting_types(), expected)
 
-    def test_files_3(self):
-        mtresult = mt.analyze(TEST_FILES_3)
-        expected = {'baz.qux': {'base_key': 'qux',
-                                'str': {'count': 3,
-                                        'max': 5,
-                                        'mean': 3.667,
-                                        'min': 3,
-                                        'sample': ['One', 'Two', 'Three']}},
-                    'foo.bar': {'base_key': 'bar',
-                                'int': {'count': 3, 'max': 30, 'mean': 20.0,
-                                        'min': 10}},
-                    'qux': {'base_key': 'qux', 'bool': {'count': 1}}}
         self.assert_stats(mtresult.stats, expected)
         self.assert_stats(mtresult.get_conflicting_types(), expected)
 

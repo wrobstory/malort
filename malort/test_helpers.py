@@ -12,10 +12,11 @@ import unittest
 TEST_FILES_1 = os.path.normpath(os.path.join(os.path.abspath(__file__),
                                 '..', 'tests', 'test_files'))
 TEST_FILES_2 = os.path.normpath(os.path.join(os.path.abspath(__file__),
-                                '..', 'tests', 'test_files_delimited'))
+                                '..', 'tests', 'test_files_newline_delimited'))
 TEST_FILES_3 = os.path.normpath(os.path.join(os.path.abspath(__file__),
                                 '..', 'tests', 'test_files_nested'))
-
+TEST_FILES_4 = os.path.normpath(os.path.join(os.path.abspath(__file__),
+                                '..', 'tests', 'test_files_mult_type'))
 
 class TestHelpers(unittest.TestCase):
 

@@ -93,10 +93,10 @@ def combine_means(means, counts):
     numer = sum([mean * count for mean, count in zip(means, counts)
                  if mean is not None and count is not None])
     denom = sum([c for c in counts if c is not None])
-    return numer / denom
+    return round(numer / denom, 3)
 
 
-def stats_combiner(accum, value):
+def combine_stats(accum, value):
     """
     Combine two sets of stats into one. Used for final dask rollup of
     multiple partitions of stats dicts into one unified stats dict. Best
@@ -113,41 +113,65 @@ def stats_combiner(accum, value):
     -------
     dict
     """
-    for value_type, type_stats in value.items():
-        accum_entry = accum.get(value_type)
-        if accum_entry:
-            max_ = (accum_entry.get("max"), value.get("max"))
-            min_ = (accum_entry.get("min"), value.get("min"))
-            count = (accum_entry.get("count"), value.get("count"))
-            mean = (accum_entry.get("mean"), value.get("mean"))
+    for field_name, type_stats in value.items():
+        if accum.get(field_name):
+            for value_type, val_stats in type_stats.items():
+                accum_entry = accum[field_name].get(value_type)
+                if not accum_entry:
+                    # If accum doesn't already have an entry, but the
+                    # value does, continue
+                    accum[field_name][value_type] = val_stats
+                    continue
 
-            if any(max_):
-                accum_entry["max"] = max(max_)
-            if any(min_):
-                accum_entry["min"] = min(min_)
-            if any(count):
-                accum_entry["count"] = sum([c for c in count if x is not None])
-            if any(mean):
-                accum_entry["mean"] = combine_means(mean, count)
+                # base_key is not a statistic to be updated
+                if value_type == "base_key":
+                    accum_entry = None
 
-            # Type specific entries
-            if value_type == "float":
-                fixed_length = (accum_entry.get("fixed_length"),
-                                value.get("fixed_length"))
-                if not all(fixed_length):
-                    accum_entry["fixed_length"] = False
+                if accum_entry:
+                    max_ = (accum_entry.get("max"), val_stats.get("max"))
+                    min_ = (accum_entry.get("min"), val_stats.get("min"))
+                    count = (accum_entry.get("count"), val_stats.get("count"))
+                    mean = (accum_entry.get("mean"), val_stats.get("mean"))
 
-                max_prec = (accum_entry.get("max_precision"),
-                            value.get("max_precision"))
-                accum_entry["max_precision"] = max(max_prec)
+                    if any(max_):
+                        accum_entry["max"] = max(max_)
+                    if any(min_):
+                        accum_entry["min"] = min(min_)
+                    if any(count):
+                        accum_entry["count"] = sum([c for c in count
+                                                    if c is not None])
+                    if any(mean):
+                        accum_entry["mean"] = combine_means(mean, count)
 
-                max_scale = (accum_entry.get("max_scale"),
-                             value.get("max_scale"))
-                accum_entry["max_scale"] = max(max_scale)
-            elif value_type == "str":
-                samples = accum_entry.get("sample", []) +\
-                          value.get("sample", [])
-                accum_entry["sample"] = random.sample(samples, 3)
+                    # Type specific entries
+                    if value_type  == "float":
+
+                        fixed_length = (accum_entry.get("fixed_length"),
+                                        val_stats.get("fixed_length"))
+
+                        # Decimals not fixed length if prec/scale do not match
+                        a_prec, a_scale = (accum_entry.get("max_precision"),
+                                           accum_entry.get("max_scale"))
+                        v_prec, v_scale = (val_stats.get("max_precision"),
+                                           val_stats.get("max_scale"))
+                        prec_scale_eq = (a_prec == v_prec, a_scale == v_scale)
+
+                        if not all(fixed_length) or not all(prec_scale_eq):
+                            accum_entry["fixed_length"] = False
+
+                        max_prec = (accum_entry.get("max_precision"),
+                                    val_stats.get("max_precision"))
+                        accum_entry["max_precision"] = max(max_prec)
+
+                        max_scale = (accum_entry.get("max_scale"),
+                                     val_stats.get("max_scale"))
+                        accum_entry["max_scale"] = max(max_scale)
+
+                    elif value_type == "str":
+                        samples = accum_entry.get("sample", []) +\
+                                  val_stats.get("sample", [])
+                        accum_entry["sample"] = random.sample(
+                            samples, min(len(samples), 3))
 
     return accum
 

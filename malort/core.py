@@ -9,6 +9,7 @@ JSON -> Postgres Column types
 from __future__ import absolute_import, print_function, division
 
 from collections import defaultdict
+from functools import partial
 import json
 import os
 from os.path import isfile, join, splitext
@@ -17,12 +18,13 @@ import re
 import time
 
 import dask.bag as db
+from dask.async import get_sync
 
-from malort.stats import recur_dict, dict_generator
+from malort.stats import recur_dict, combine_stats, dict_generator
 from malort.type_mappers import TypeMappers
 
 
-def analyze(path, delimiter='\n', parse_timestamps=True, **kwargs):
+def analyze(path, parse_timestamps=True, **kwargs):
     """
     Analyze a given directory of either .json or flat text files
     with delimited JSON to get relevant key statistics.
@@ -31,8 +33,6 @@ def analyze(path, delimiter='\n', parse_timestamps=True, **kwargs):
     ----------
     path: string
         Path to directory
-    delimiter: string, default newline
-        For flat text files, the JSON blob delimiter
     parse_timestamps: boolean, default True
         If True, will attempt to regex match ISO8601 formatted parse_timestamps
     kwargs:
@@ -42,9 +42,11 @@ def analyze(path, delimiter='\n', parse_timestamps=True, **kwargs):
     stats = {}
 
     start_time = time.time()
-    bag = db.from_filenames(path).map(json.loads)
-    for count, blob in enumerate(dict_generator(path, delimiter, **kwargs), start=1):
-        recur_dict(stats, blob, parse_timestamps=parse_timestamps)
+    file_list = [os.path.join(path, f) for f in os.listdir(path)]
+    bag = db.from_filenames(file_list).map(json.loads)
+    recur_partial = partial(recur_dict, parse_timestamps=parse_timestamps)
+    stats = bag.fold(recur_partial, combine_stats, initial={}).compute()
+    count = bag.count().compute()
 
     elapsed = time.time() - start_time
     print('Malort run finished: {} JSON blobs analyzed in {} seconds.'

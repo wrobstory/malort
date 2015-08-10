@@ -1,5 +1,1 @@
-{"intfield": 5,
- "floatfield": 2.345,
- "datefield": "2014-09-26 17:00:00",
- "charfield": "fixedlength",
- "varcharfield": "var"}
+{"intfield": 5,"floatfield": 2.345,"datefield": "2014-09-26 17:00:00","charfield": "fixedlength","varcharfield": "var"}
