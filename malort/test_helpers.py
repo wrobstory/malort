@@ -23,6 +23,9 @@ class TestHelpers(unittest.TestCase):
     def assert_stats(self, result, expected):
         """Test helper for testing stats results"""
         for key, value in result.items():
+            if key == 'total_records':
+                self.assertEqual(expected['total_records'], value)
+                continue
             for typek, typev in value.items():
                 if typek == 'str':
                     for k, v in typev.items():

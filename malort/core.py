@@ -46,7 +46,8 @@ def analyze(path, parse_timestamps=True, **kwargs):
     bag = db.from_filenames(file_list).map(json.loads)
     recur_partial = partial(recur_dict, parse_timestamps=parse_timestamps)
     stats = bag.fold(recur_partial, combine_stats, initial={}).compute()
-    count = bag.count().compute()
+    count = stats["total_records"]
+    del stats["total_records"]
 
     elapsed = time.time() - start_time
     print('Malort run finished: {} JSON blobs analyzed in {} seconds.'

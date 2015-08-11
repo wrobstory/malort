@@ -34,16 +34,18 @@ class TestCore(TestHelpers):
                                  'sample': ['var', 'varyin', 'varyingle',
                                             'varyinglengt']},
                          'base_key': 'varcharfield'},
-        'datefield': {'datetime': {'count': 4}, 'base_key': 'datefield'}
+        'datefield': {'datetime': {'count': 4}, 'base_key': 'datefield'},
     }
 
     def test_files_1(self):
         mtresult = mt.analyze(TEST_FILES_1)
+        self.assertEqual(mtresult.count, 4)
         self.assert_stats(mtresult.stats, self.expected_1_and_2)
         self.assertDictEqual(mtresult.get_conflicting_types(), {})
 
     def test_files_2(self):
         mtresult = mt.analyze(TEST_FILES_2)
+        self.assertEqual(mtresult.count, 4)
         self.assert_stats(mtresult.stats, self.expected_1_and_2)
         self.assertDictEqual(mtresult.get_conflicting_types(), {})
 
@@ -60,6 +62,7 @@ class TestCore(TestHelpers):
                                         'min': 10}},
                     'qux': {'base_key': 'qux', 'bool': {'count': 1}}}
         self.assert_stats(mtresult.stats, expected)
+        self.assertEqual(mtresult.count, 3)
         self.assert_stats(mtresult.get_conflicting_types(), expected)
 
     def test_files_4(self):
@@ -87,6 +90,7 @@ class TestCore(TestHelpers):
         }
 
         self.assert_stats(mtresult.stats, expected)
+        self.assertEqual(mtresult.count, 4)
         self.assert_stats(mtresult.get_conflicting_types(), expected)
 
     def test_gen_redshift_jsonpaths(self):

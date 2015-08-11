@@ -113,7 +113,15 @@ def combine_stats(accum, value):
     -------
     dict
     """
+
     for field_name, type_stats in value.items():
+
+        # Update total count
+        if field_name == "total_records":
+            accum["total_records"] = accum["total_records"] + type_stats
+            continue
+
+        # Combine accum stats from different branches
         if accum.get(field_name):
             for value_type, val_stats in type_stats.items():
                 accum_entry = accum[field_name].get(value_type)
@@ -125,7 +133,7 @@ def combine_stats(accum, value):
 
                 # base_key is not a statistic to be updated
                 if value_type == "base_key":
-                    accum_entry = None
+                    continue
 
                 if accum_entry:
                     max_ = (accum_entry.get("max"), val_stats.get("max"))
@@ -262,6 +270,11 @@ def recur_dict(stats, value, parent=None, **kwargs):
     kwargs: Options for update_entry_stats
     """
     parent = parent or ''
+
+    if parent == '':
+        total_records = stats.get("total_records")
+        stats["total_records"] = (total_records + 1) if total_records else 1
+
     def update_stats(current_val, nested_path, base_key):
         "Updater function"
         if nested_path not in stats:
