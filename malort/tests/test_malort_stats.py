@@ -24,10 +24,6 @@ class TestDictGenerator(TestHelpers):
         gen = mt.stats.dict_generator(TEST_FILES_1)
         self.assertEquals(len([d for d in gen]), 4)
 
-    def test_json_files_pipe(self):
-        gen = mt.stats.dict_generator(TEST_FILES_2, '|')
-        self.assertEquals(len([d for d in gen]), 4)
-
 
 class TestUpdateEntryStats(TestHelpers):
 
@@ -121,13 +117,14 @@ class TestRecurDict(TestHelpers):
             'key4': {'bool': {'count': 1}, 'base_key': 'key4'},
             'key5': {'str': {'count': 1, 'max': 23, 'mean': 23.0, 'min': 23,
                      'sample': ['["one", "two", "three"]']},
-                     'base_key': 'key5'}
+                     'base_key': 'key5'},
+            'total_records': 1
         }
 
-        stats = mt.stats.recur_dict(simple1, {})
+        stats = mt.stats.recur_dict({}, simple1)
         self.assertDictEqual(stats, expected)
 
-        updated_stats = mt.stats.recur_dict({'key1': 2}, stats)
+        updated_stats = mt.stats.recur_dict(stats, {'key1': 2})
         self.assertDictEqual(updated_stats['key1'],
                              {'int': {'count': 2, 'max': 2, 'mean': 1.5,
                                       'min': 1}, 'base_key': 'key1'})
@@ -175,9 +172,10 @@ class TestRecurDict(TestHelpers):
                                             'max_scale': 1,
                                             'mean': 8.0,
                                             'min': 8.0}},
-                    'key5.key4': {'base_key': 'key4', 'bool': {'count': 1}}}
+                    'key5.key4': {'base_key': 'key4', 'bool': {'count': 1}},
+                    'total_records': 1}
 
-        stats = mt.stats.recur_dict(depth_one, {})
+        stats = mt.stats.recur_dict({}, depth_one)
         self.assert_stats(stats, expected)
 
     @property
@@ -239,7 +237,8 @@ class TestRecurDict(TestHelpers):
                                              'max_scale': 1,
                                              'mean': 2.0,
                                              'min': 2.0}},
-                'key5.key6.key4': {'base_key': 'key4', 'bool': {'count': 1}}}
+                'key5.key6.key4': {'base_key': 'key4', 'bool': {'count': 1}},
+                'total_records': 1}
 
     def test_recur_depth_two(self):
         depth_two = {
@@ -252,7 +251,7 @@ class TestRecurDict(TestHelpers):
             }
         }
 
-        stats = mt.stats.recur_dict(depth_two, {})
+        stats = mt.stats.recur_dict({}, depth_two)
         self.assert_stats(stats, self.depth_two_expected)
 
     def test_recur_with_array(self):
@@ -264,7 +263,7 @@ class TestRecurDict(TestHelpers):
                 ]
         }
 
-        stats = mt.stats.recur_dict(with_list, {})
+        stats = mt.stats.recur_dict({}, with_list)
         self.assert_stats(stats, self.depth_two_expected)
 
     def test_recur_with_val_array(self):
@@ -274,7 +273,7 @@ class TestRecurDict(TestHelpers):
           "key3": [{"key2": ["foo", "bar"]}]
         }
 
-        stats = mt.stats.recur_dict(with_list, {})
+        stats = mt.stats.recur_dict({}, with_list)
         expected = {'key1': {'base_key': 'key1',
                              'int': {'count': 1, 'max': 1,
                                      'mean': 1.0, 'min': 1}},
@@ -289,7 +288,8 @@ class TestRecurDict(TestHelpers):
                                           'max': 14,
                                           'mean': 14.0,
                                           'min': 14,
-                                          'sample': ['["foo", "bar"]']}}}
+                                          'sample': ['["foo", "bar"]']}},
+                    'total_records': 1}
         self.assert_stats(stats, expected)
 
     def test_raises_with_list_of_unknown(self):
@@ -299,4 +299,118 @@ class TestRecurDict(TestHelpers):
         }
 
         with pytest.raises(TypeError):
-            mt.stats.recur_dict(with_values, {})
+            mt.stats.recur_dict({}, with_values)
+
+
+class TestStatsCombiner(TestHelpers):
+
+    def test_simple_stat_agg(self):
+        accum = {
+            'key1': {'int': {'count': 1, 'max': 1, 'mean': 1.0, 'min': 1},
+                     'base_key': 'key1'},
+            'key2': {'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
+                             'sample': ['Foo']},
+                     'base_key': 'key2'},
+            'total_records': 3
+        }
+        value = {
+            'key1': {'int': {'count': 1, 'max': 4, 'mean': 1.0, 'min': 4},
+                     'base_key': 'key1'},
+            'key2': {'str': {'count': 9, 'max': 5, 'mean': 6.0, 'min': 0,
+                             'sample': ['Foo']},
+                     'base_key': 'key2'},
+            'total_records': 1
+        }
+        combined = mt.stats.combine_stats(accum, value)
+        expected = {
+            'key1': {'int': {'count': 2, 'max': 4, 'mean': 1.0, 'min': 1},
+                     'base_key': 'key1'},
+            'key2': {'str': {'count': 10, 'max': 5, 'mean': 5.7, 'min': 0,
+                             'sample': ['Foo', 'Foo']},
+                     'base_key': 'key2'},
+            'total_records': 4
+        }
+        self.assert_stats(combined, expected)
+
+    def test_value_missing_key(self):
+        accum = {
+            'key1': {'int': {'count': 1, 'max': 1, 'mean': 1.0, 'min': 1},
+                     'base_key': 'key1',
+                     'float': {'count': 1, 'fixed_length': True, 'max': 4.0,
+                               'max_precision': 2, 'max_scale': 1, 'mean': 4.0,
+                               'min': 4.0}},
+            'key2': {'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
+                             'sample': ['Foo']},
+                     'base_key': 'key2'},
+            'total_records': 1
+        }
+        value = {
+            'key1': {'int': {'count': 1, 'max': 4, 'mean': 1.0, 'min': 4},
+                     'base_key': 'key1',
+                     'float': {'count': 12, 'fixed_length': False, 'max': 2.0,
+                               'max_precision': 10, 'max_scale': 0,
+                               'mean': 10.0, 'min': 1.0}},
+            'total_records': 10
+        }
+        combined = mt.stats.combine_stats(accum, value)
+        expected = {
+            'key1': {'int': {'count': 2, 'max': 4, 'mean': 1.0, 'min': 1},
+                     'base_key': 'key1',
+                     'float': {'count': 13, 'fixed_length': False, 'max': 4.0,
+                               'max_precision': 10, 'max_scale': 1,
+                               'mean': 9.538, 'min': 1.0}},
+            'key2': {'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
+                             'sample': ['Foo']},
+                     'base_key': 'key2'},
+            'total_records': 11
+        }
+        self.assert_stats(combined, expected)
+
+    def test_accum_missing_key(self):
+        accum = {
+            'key1': {'int': {'count': 1, 'max': 1, 'mean': 1.0, 'min': 1},
+                     'base_key': 'key1'},
+            'total_records': 2
+        }
+
+        value = {
+            'key2': {'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
+                             'sample': ['Foo']},
+                     'base_key': 'key2'},
+            'key1': {'str': {'count': 1, 'max': 2, 'mean': 2.0, 'min': 2,
+                             'sample': ['Foo']}},
+            'total_records': 2
+        }
+        combined = mt.stats.combine_stats(accum, value)
+        expected = {
+            'key1': {'int': {'count': 1, 'max': 1, 'mean': 1.0, 'min': 1},
+                     'str': {'count': 1, 'max': 2, 'mean': 2.0, 'min': 2,
+                             'sample': ['Foo']},
+                     'base_key': 'key1'},
+            'key2': {'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
+                             'sample': ['Foo']},
+                     'base_key': 'key2'},
+            'total_records': 4
+        }
+        self.assert_stats(combined, expected)
+
+    def test_mult_sample(self):
+        samples = ["foo", "bar", "baz", "qux", "Foo", "Bar"]
+        accum = {
+            'key1': {'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
+                             'sample': samples[0:4]},
+                     'base_key': 'key2'},
+            'total_records': 1
+        }
+
+        value = {
+            'key1': {'str': {'count': 1, 'max': 3, 'mean': 3.0, 'min': 3,
+                             'sample': samples[4:]},
+                     'base_key': 'key2'},
+            'total_records': 1
+        }
+
+        combined = mt.stats.combine_stats(accum, value)
+        sample_key = combined['key1']['str']['sample']
+        assert len(set(sample_key).difference(set(samples))) == 0
+        assert combined['total_records'] == 2

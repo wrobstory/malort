@@ -6,9 +6,7 @@ Malort Stats
 Functions to generate Malort stats
 
 """
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
+from __future__ import absolute_import, print_function, division
 
 import decimal
 import json
@@ -25,6 +23,7 @@ ISO8601 = re.compile(r"""^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]
                       \d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)
                       ?)?)?$""", re.VERBOSE)
 
+
 def delimited(file, delimiter='\n', bufsize=4096):
     buf = ''
     while True:
@@ -38,6 +37,7 @@ def delimited(file, delimiter='\n', bufsize=4096):
             yield line
         buf = lines[-1]
 
+
 def catch_json_error(blob, filepath, **kwargs):
     """Wrapper to provide better error message for JSON reads"""
     try:
@@ -47,6 +47,7 @@ def catch_json_error(blob, filepath, **kwargs):
                                                              e.args[0]))
 
     return parsed
+
 
 def dict_generator(path, delimiter='\n', **kwargs):
     """
@@ -80,10 +81,108 @@ def dict_generator(path, delimiter='\n', **kwargs):
                 else:
                     yield catch_json_error(fread.read(), filepath, **kwargs)
 
+
 def get_new_mean(value, current_mean, count):
     """Given a value, current mean, and count, return new mean"""
     summed = current_mean * count
     return (summed + value)/(count + 1)
+
+
+def combine_means(means, counts):
+    """Combine ordered iter of means and counts"""
+    numer = sum([mean * count for mean, count in zip(means, counts)
+                 if mean is not None and count is not None])
+    denom = sum([c for c in counts if c is not None])
+    return round(numer / denom, 3)
+
+
+def combine_stats(accum, value):
+    """
+    Combine two sets of stats into one. Used for final dask rollup of
+    multiple partitions of stats dicts into one unified stats dict. Best
+    thought of as a reduction over multiple stats object.
+
+    Parameters
+    ----------
+    accum: dict
+        Accumlating tats dict
+    value: dict
+        New stats dict to merge with accumulator
+
+    Returns
+    -------
+    dict
+    """
+
+    for field_name, type_stats in value.items():
+
+        # Update total count
+        if field_name == "total_records":
+            accum["total_records"] = accum["total_records"] + type_stats
+            continue
+
+        # Combine accum stats from different branches
+        if accum.get(field_name):
+            for value_type, val_stats in type_stats.items():
+                accum_entry = accum[field_name].get(value_type)
+                if not accum_entry:
+                    # If accum doesn't already have an entry, but the
+                    # value does, continue
+                    accum[field_name][value_type] = val_stats
+                    continue
+
+                # base_key is not a statistic to be updated
+                if value_type == "base_key":
+                    continue
+
+                if accum_entry:
+                    max_ = (accum_entry.get("max"), val_stats.get("max"))
+                    min_ = (accum_entry.get("min"), val_stats.get("min"))
+                    count = (accum_entry.get("count"), val_stats.get("count"))
+                    mean = (accum_entry.get("mean"), val_stats.get("mean"))
+
+                    if any(max_):
+                        accum_entry["max"] = max(max_)
+                    if any(min_):
+                        accum_entry["min"] = min(min_)
+                    if any(count):
+                        accum_entry["count"] = sum([c for c in count
+                                                    if c is not None])
+                    if any(mean):
+                        accum_entry["mean"] = combine_means(mean, count)
+
+                    # Type specific entries
+                    if value_type  == "float":
+
+                        fixed_length = (accum_entry.get("fixed_length"),
+                                        val_stats.get("fixed_length"))
+
+                        # Decimals not fixed length if prec/scale do not match
+                        a_prec, a_scale = (accum_entry.get("max_precision"),
+                                           accum_entry.get("max_scale"))
+                        v_prec, v_scale = (val_stats.get("max_precision"),
+                                           val_stats.get("max_scale"))
+                        prec_scale_eq = (a_prec == v_prec, a_scale == v_scale)
+
+                        if not all(fixed_length) or not all(prec_scale_eq):
+                            accum_entry["fixed_length"] = False
+
+                        max_prec = (accum_entry.get("max_precision"),
+                                    val_stats.get("max_precision"))
+                        accum_entry["max_precision"] = max(max_prec)
+
+                        max_scale = (accum_entry.get("max_scale"),
+                                     val_stats.get("max_scale"))
+                        accum_entry["max_scale"] = max(max_scale)
+
+                    elif value_type == "str":
+                        samples = accum_entry.get("sample", []) +\
+                                  val_stats.get("sample", [])
+                        accum_entry["sample"] = random.sample(
+                            samples, min(len(samples), 3))
+
+    return accum
+
 
 def updated_entry_stats(value, current_stats, parse_timestamps=True):
     """
@@ -156,7 +255,7 @@ def updated_entry_stats(value, current_stats, parse_timestamps=True):
     return value_type, new_stats
 
 
-def recur_dict(value, stats, parent=None, **kwargs):
+def recur_dict(stats, value, parent=None, **kwargs):
     """
     Recurse through a dict `value` and update `stats` for each field.
     Can handle nested dicts, lists of dicts, and lists of values (must be
@@ -170,8 +269,11 @@ def recur_dict(value, stats, parent=None, **kwargs):
         Parent key to get key nesting depth.
     kwargs: Options for update_entry_stats
     """
-
     parent = parent or ''
+
+    if parent == '':
+        total_records = stats.get("total_records")
+        stats["total_records"] = (total_records + 1) if total_records else 1
 
     def update_stats(current_val, nested_path, base_key):
         "Updater function"
@@ -187,14 +289,14 @@ def recur_dict(value, stats, parent=None, **kwargs):
         for k, v in value.items():
             parent_path = '.'.join([parent, k]) if parent != '' else k
             if isinstance(v, (list, dict)):
-                recur_dict(v, stats, parent_path)
+                recur_dict(stats, v, parent_path)
             else:
                 update_stats(v, parent_path, k)
 
     elif isinstance(value, list):
         for v in value:
             if isinstance(v, (list, dict)):
-                recur_dict(v, stats, parent)
+                recur_dict(stats, v, parent)
             else:
                 base_key = parent.split(".")[-1]
                 update_stats(json.dumps(value), parent, base_key)

@@ -9,7 +9,7 @@ import unittest
 
 import malort as mt
 from malort.test_helpers import (TestHelpers, TEST_FILES_1, TEST_FILES_2,
-                                 TEST_FILES_3)
+                                 TEST_FILES_3, TEST_FILES_4)
 
 
 class TestTypeMappers(unittest.TestCase):
@@ -27,7 +27,7 @@ class TestTypeMappers(unittest.TestCase):
         self.assertDictEqual(types, expected)
 
     def test_files_2(self):
-        mtresult = mt.analyze(TEST_FILES_2, '|')
+        mtresult = mt.analyze(TEST_FILES_4)
         types = mtresult.get_redshift_types()
         for k, v in types.items():
             self.assertEqual(v, 'Multiple types detected.')
