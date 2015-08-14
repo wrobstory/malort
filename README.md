@@ -23,7 +23,7 @@ Because for (mostly) structured documents where we're expecting the schema to ra
 
 How
 ------
-Malort will read through a directory of .json or flat text files with delimited JSON blobs and generate relevant statistics on each key.
+Malort will read through a directory of .json or flat text files (optionally gzipped) with delimited JSON blobs and generate relevant statistics on each key. It uses the Dask libary to parallelize these computations.
 
 For example, let's look at a directory with two JSON files, and one text file with newline-delimited JSON:
 ```json
@@ -109,18 +109,16 @@ Install
 
 API
 ---
-* `result = malort.analyze(path, delimiter='\n', parse_timestamps=True)`
+* `result = malort.analyze(path, parse_timestamps=True)`
 
 ```python
-Analyze a given directory of either .json or flat text files
-with delimited JSON to get relevant key statistics.
+Analyze a given directory of either .json, flat text files
+with newline-delimited JSON, or gzipped files with newline-delimted JSON to get relevant key statistics.
 
 Parameters
 ----------
 path: string
     Path to directory
-delimiter: string, default newline
-    For flat text files, the JSON blob delimiter
 parse_timestamps: boolean, default True
     If True, will attempt to regex match ISO8601 formatted parse_timestamps
 ```
@@ -158,7 +156,7 @@ Yes.
 
 How fast is it?
 ---------------
-With timestamp parsing turned on, I used Malort to process 2.1 GB of files (1,326,794 nested JSON blobs) in 8 minutes. There are undoubtedly ways to do it faster.
+With timestamp parsing turned on, I used Malort to process 2.1 GB of files (1,326,794 nested JSON blobs) in 8 minutes. There are undoubtedly ways to do it faster. Speed will depend on a number of factors, including nesting depth.
 
 Should I use the column type results verbatim?
 ----------------------------------------------

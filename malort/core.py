@@ -18,7 +18,6 @@ import re
 import time
 
 import dask.bag as db
-from dask.async import get_sync
 
 from malort.stats import recur_dict, combine_stats, dict_generator
 from malort.type_mappers import TypeMappers
