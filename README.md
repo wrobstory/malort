@@ -160,4 +160,4 @@ With timestamp parsing turned on, I used Malort to process 2.1 GB of files (1,32
 
 Should I use the column type results verbatim?
 ----------------------------------------------
-Probably not- they're meant to be a guide, not a CREATE TABLE statement. It's up to you to determine whether your data represents a statistically significant enough sample to set fixed-width columns with certainty, or whether you might anticipate schema changes in the future. Like a lot of data tools, it's meant to help guide your engineering judgement. Additionally, it does round/truncate statistics to three decimal points, so there will be floating point errors in the calculation.
+Probably not- they're meant to be a guide, not a CREATE TABLE statement. It's up to you to determine whether your data represents a large and representative enough sample to set fixed-width columns with certainty, or whether you might anticipate schema changes in the future. Like a lot of data tools, it's meant to help guide your engineering judgement. Additionally, it does round/truncate statistics to three decimal points, so there will be floating point errors in the calculation.
